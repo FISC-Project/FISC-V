@@ -165,6 +165,8 @@ class FISCV {
 	/* TODO */
 
 	bool is_branching;
+	#define REL_BRANCH(new_addr) pc = (pc+new_addr); is_branching = true;
+	#define ABS_BRANCH(new_addr) pc = (new_addr);    is_branching = true;
 
 	/* CPU Methods: */
 	void stop() {
@@ -172,18 +174,74 @@ class FISCV {
 	}
 
 	void decode_and_execute(uint32_t instruction, uint16_t opcode) {
+		/* Cover the 11-bit opcodes: */
 		switch(opcode) {
-			case ADD: printf("(ADD)\n");
-				add(INSTR_TO_IFMT_R(instruction));
-				break;
-			case ADDI: printf("(ADDI)\n");
-				addi(INSTR_TO_IFMT_I(instruction));
-				break;
-			case ADDIS: printf("(ADDIS)\n"); break;
-			case ADDS: printf("(ADDS)\n"); break;
-			case B: printf(" (B)\n"); break;
+			case ADD:   printf("(ADD)\n");     add(INSTR_TO_IFMT_R(instruction));    break;
+			case ADDS:  printf("(ADDS)\n");    adds(INSTR_TO_IFMT_R(instruction));   break;
+			case SUB:   printf("(SUB)\n");     sub(INSTR_TO_IFMT_R(instruction));    break;
+			case SUBS:  printf("(SUBS)\n");    subs(INSTR_TO_IFMT_R(instruction));   break;
+			case MUL:   printf("(MUL)\n");     mul(INSTR_TO_IFMT_R(instruction));    break;
+			case SMULH: printf("(SMULH)\n");   smulh(INSTR_TO_IFMT_R(instruction));  break;
+			case UMULH: printf("(UMULH)\n");   umulh(INSTR_TO_IFMT_R(instruction));  break;
+			case SDIV:  printf("(SDIV)\n");    sdiv(INSTR_TO_IFMT_R(instruction));   break;
+			case UDIV:  printf("(UDIV)\n");    udiv(INSTR_TO_IFMT_R(instruction));   break;
+			case AND:   printf("(AND)\n");     and_(INSTR_TO_IFMT_R(instruction));   break;
+			case ANDS:  printf("(ANDS)\n");    ands(INSTR_TO_IFMT_R(instruction));   break;
+			case ORR:   printf("(ORR)\n");     orr(INSTR_TO_IFMT_R(instruction));    break;
+			case EOR:   printf("(EOR)\n");     eor(INSTR_TO_IFMT_R(instruction));    break;
+			case NEG:   printf("(NEG)\n");     neg(INSTR_TO_IFMT_R(instruction));    break;
+			case NOT:   printf("(NOT)\n");     not_(INSTR_TO_IFMT_R(instruction));   break;
+			case LSL:   printf("(LSL)\n");     lsl(INSTR_TO_IFMT_R(instruction));    break;
+			case LSR:   printf("(LSR)\n");     lsr(INSTR_TO_IFMT_R(instruction));    break;
+			case BR:    printf("(BR)\n");      br(INSTR_TO_IFMT_R(instruction));     break;
+			case LDUR:  printf("(LDUR)\n");    ldur(INSTR_TO_IFMT_D(instruction));   break;
+			case LDURB: printf("(LDURB)\n");   ldurb(INSTR_TO_IFMT_D(instruction));  break;
+			case LDURH: printf("(LDURH)\n");   ldurh(INSTR_TO_IFMT_D(instruction));  break;
+			case LDURSW: printf("(LDURSW)\n"); ldursw(INSTR_TO_IFMT_D(instruction)); break;
+			case LDXR:  printf("(LDXR)\n");    ldxr(INSTR_TO_IFMT_D(instruction));   break;
+			case STUR:  printf("(STUR)\n");    stur(INSTR_TO_IFMT_D(instruction));   break;
+			case STURB: printf("(STURB)\n");   sturb(INSTR_TO_IFMT_D(instruction));  break;
+			case STURH: printf("(STURH)\n");   sturh(INSTR_TO_IFMT_D(instruction));  break;
+			case STURW: printf("(STURW)\n");   sturw(INSTR_TO_IFMT_D(instruction));  break;
+			case STXR:  printf("(STXR)\n");    stxr(INSTR_TO_IFMT_D(instruction));   break;
 
-			default: printf(" (INVALID)\n"); break; /* Unknown instruction */
+			/* Cover the 10-bit opcodes: */
+			default: {
+				switch(opcode >> 1) {
+					case ADDI: printf("(ADDI)\n");   addi(INSTR_TO_IFMT_I(instruction));  break;
+					case ADDIS: printf("(ADDIS)\n"); addis(INSTR_TO_IFMT_I(instruction)); break;
+					case SUBI:  printf("(SUBI)\n");  subi(INSTR_TO_IFMT_I(instruction));  break;
+					case SUBIS: printf("(SUBIS)\n"); subis(INSTR_TO_IFMT_I(instruction)); break;
+					case ANDI:  printf("(ANDI)\n");  andi(INSTR_TO_IFMT_I(instruction));  break;
+					case ANDIS: printf("(ANDIS)\n"); andis(INSTR_TO_IFMT_I(instruction)); break;
+					case ORRI:  printf("(ORRI)\n");  orri(INSTR_TO_IFMT_I(instruction));  break;
+					case EORI:  printf("(EORI)\n");  eori(INSTR_TO_IFMT_I(instruction));  break;
+					case NEGI:  printf("(NEGI)\n");  negi(INSTR_TO_IFMT_I(instruction));  break;
+					case NOTI:  printf("(NOTI)\n");  noti(INSTR_TO_IFMT_I(instruction));  break;
+
+					/* Cover the 8-bit opcodes: */
+					default :  {
+						switch(opcode >> 3) {
+							case CBNZ:  printf("(CBNZ)\n");  cbnz(INSTR_TO_IFMT_CB(instruction));  break;
+							case CBZ:   printf("(CBZ)\n");   cbz(INSTR_TO_IFMT_CB(instruction));   break;
+							case BCOND: printf("(BCOND)\n"); bcond(INSTR_TO_IFMT_CB(instruction)); break;
+
+							/* Cover the 6-bit opcodes: */
+							default: {
+								switch(opcode >> 5) {
+									case B:  printf(" (B)\n"); b(INSTR_TO_IFMT_B(instruction));  break;
+									case BL: printf("(BL)\n"); bl(INSTR_TO_IFMT_B(instruction)); break;
+
+									/* Unknown/Invalid instruction: */
+									default: {
+										printf(" (!INVALID!)\n"); break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 public:
@@ -219,14 +277,190 @@ public:
 		memset(&flags, 0, sizeof(flags_t));
 	}
 private:
-	/*********************************/
-	/* Single Instruction Execution: */
-	/*********************************/
+	/********************************/
+	/* Instruction Implementations: */
+	/********************************/
 	void add(ifmt_r_t * instr) {
-		printf("Opcode: 0x%x | Rm: %d | shamt: %d | Rn: %d | Rd: %d\n\n", instr->opcode, instr->rm, instr->shamt, instr->rn, instr->rd);
+
 	}
+
 	void addi(ifmt_i_t * instr) {
-		printf("Opcode: 0x%x | ALUImm: %d | Rn: %d | Rd: %d\n\n", instr->opcode, instr->alu_immediate, instr->rn, instr->rd);
+
+	}
+
+	void addis(ifmt_i_t * instr) {
+
+	}
+
+	void adds(ifmt_r_t * instr) {
+
+	}
+
+	void sub(ifmt_r_t * instr) {
+
+	}
+
+	void subi(ifmt_i_t * instr) {
+
+	}
+
+	void subis(ifmt_i_t * instr) {
+
+	}
+
+	void subs(ifmt_r_t * instr) {
+
+	}
+
+	void mul(ifmt_r_t * instr) {
+
+	}
+
+	void smulh(ifmt_r_t * instr) {
+
+	}
+
+	void umulh(ifmt_r_t * instr) {
+
+	}
+
+	void sdiv(ifmt_r_t * instr) {
+
+	}
+
+	void udiv(ifmt_r_t * instr) {
+
+	}
+
+	void and_(ifmt_r_t * instr) {
+
+	}
+
+	void andi(ifmt_i_t * instr) {
+
+	}
+
+	void andis(ifmt_i_t * instr) {
+
+	}
+
+	void ands(ifmt_r_t * instr) {
+
+	}
+
+	void orr(ifmt_r_t * instr) {
+
+	}
+
+	void orri(ifmt_i_t * instr) {
+
+	}
+
+	void eor(ifmt_r_t * instr) {
+
+	}
+
+	void eori(ifmt_i_t * instr) {
+
+	}
+
+	void neg(ifmt_r_t * instr) {
+
+	}
+
+	void negi(ifmt_i_t * instr) {
+
+	}
+
+	void not_(ifmt_r_t * instr) {
+
+	}
+
+	void noti(ifmt_i_t * instr) {
+
+	}
+
+	void lsl(ifmt_r_t * instr) {
+
+	}
+
+	void lsr(ifmt_r_t * instr) {
+
+	}
+
+	void movk(ifmt_iw_t * instr) {
+
+	}
+
+	void movz(ifmt_iw_t * instr) {
+
+	}
+
+	void b(ifmt_b_t * instr) {
+		int32_t addr = instr->br_address;
+		if(addr & 0x2000000)
+			addr = -((~addr+1) & 0x3FFFFFF);
+		REL_BRANCH(addr);
+	}
+
+	void bcond(ifmt_cb_t * instr) {
+
+	}
+
+	void bl(ifmt_b_t * instr) {
+
+	}
+
+	void br(ifmt_r_t * instr) {
+
+	}
+
+	void cbnz(ifmt_cb_t * instr) {
+
+	}
+
+	void cbz(ifmt_cb_t * instr) {
+
+	}
+
+	void ldur(ifmt_d_t * instr) {
+
+	}
+
+	void ldurb(ifmt_d_t * instr) {
+
+	}
+
+	void ldurh(ifmt_d_t * instr) {
+
+	}
+
+	void ldursw(ifmt_d_t * instr) {
+
+	}
+
+	void ldxr(ifmt_d_t * instr) {
+
+	}
+
+	void stur(ifmt_d_t * instr) {
+
+	}
+
+	void sturb(ifmt_d_t * instr) {
+
+	}
+
+	void sturh(ifmt_d_t * instr) {
+
+	}
+
+	void sturw(ifmt_d_t * instr) {
+
+	}
+
+	void stxr(ifmt_d_t * instr) {
+
 	}
 
 	/* Etc... */
