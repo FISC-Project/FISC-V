@@ -383,46 +383,46 @@ private:
 
 		switch(instr->rt) {
 		case 0: /* BEQ */
-			if(flags.zero) REL_BRANCH(addr);
+			if(flags.zero) { REL_BRANCH(addr); }
 			break;
 		case 1: /* BNE */
-			if(!flags.zero) REL_BRANCH(addr);
+			if(!flags.zero) { REL_BRANCH(addr); }
 			break;
 		case 2: /* BLT */
-			if(flags.negative ^ flags.overflow) REL_BRANCH(addr);
+			if(flags.negative ^ flags.overflow) { REL_BRANCH(addr); }
 			break;
 		case 3: /* BLE */
-			if(!(!flags.zero & !(flags.negative ^ flags.overflow))) REL_BRANCH(addr);
+			if(!(!flags.zero & !(flags.negative ^ flags.overflow))) { REL_BRANCH(addr); }
 			break;
 		case 4: /* BGT */
-			if((!flags.zero & !(flags.negative ^ flags.overflow))) REL_BRANCH(addr);
+			if((!flags.zero & !(flags.negative ^ flags.overflow))) { REL_BRANCH(addr); }
 			break;
 		case 5: /* BGE */
-			if(!(flags.negative ^ flags.overflow)) REL_BRANCH(addr);
+			if(!(flags.negative ^ flags.overflow)) { REL_BRANCH(addr); }
 			break;
 		case 6: /* BLO */
-			if(!(flags.carry)) REL_BRANCH(addr);
+			if(!(flags.carry)) { REL_BRANCH(addr); }
 			break;
 		case 7: /* BLS */
-			if(!(!flags.zero & flags.carry)) REL_BRANCH(addr);
+			if(!(!flags.zero & flags.carry)) { REL_BRANCH(addr); }
 			break;
 		case 8: /* BHI */
-			if((!flags.zero & flags.carry)) REL_BRANCH(addr);
+			if((!flags.zero & flags.carry)) { REL_BRANCH(addr); }
 			break;
 		case 9: /* BHS */
-			if(flags.carry) REL_BRANCH(addr);
+			if(flags.carry) { REL_BRANCH(addr); }
 			break;
 		case 10: /* BMI */
-			if(flags.negative) REL_BRANCH(addr);
+			if(flags.negative) { REL_BRANCH(addr); }
 			break;
 		case 11: /* BPL */
-			if(!flags.negative) REL_BRANCH(addr);
+			if(!flags.negative) { REL_BRANCH(addr); }
 			break;
 		case 12: /* BVS */
-			if(flags.overflow) REL_BRANCH(addr);
+			if(flags.overflow) { REL_BRANCH(addr); }
 			break;
 		case 13: /* BVC */
-			if(!flags.overflow) REL_BRANCH(addr);
+			if(!flags.overflow) { REL_BRANCH(addr); }
 			break;
 		default: /* Invalid Conditional Branch type */ break;
 		}
