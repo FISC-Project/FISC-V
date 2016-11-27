@@ -10,6 +10,7 @@
 
 #include "memory.h"
 #include "fisc_isa.h"
+#include "limits.h"
 
 /************/
 /** FISC-V **/
@@ -23,8 +24,8 @@ class FISCV {
 	/********************/
 
 	/* Registers: */
-	uint64_t x[FISC_REGISTER_COUNT];
 	uint32_t pc; /* Program Counter */
+	uint64_t x[FISC_REGISTER_COUNT];
 	#define IP0 x[16]
 	#define IP1 x[17]
 	#define SP  x[28]
@@ -156,25 +157,25 @@ public:
 	}
 private:
 	bool detect_overflow(uint64_t op1, uint64_t op2, char operation) {
-		/* TODO: */
 		switch(operation) {
-		case '+': break;
-		case '-': break;
-		case '&': break;
-		default: /* Unknown/Invalid operation */ break;
+			case '+': return (op2 > 0) && (op1 > INT_MAX - op2);
+			case '-': return (op2 < 0) && (op1 > INT_MAX + op2);
+			default: /* Unknown/Invalid operation */ return false;
 		}
-		return false;
 	}
 
 	bool detect_carry(uint64_t op1, uint64_t op2, char operation) {
-		/* TODO: */
 		switch(operation) {
-		case '+': break;
-		case '-': break;
-		case '&': break;
-		default: /* Unknown/Invalid operation */ break;
+			case '+': {
+				int64_t res = op1 + op2;
+				return 1 & (((op1 & op2 & ~res) | (~op1 & ~op2 & res)) >> 63);
+			}
+			case '-': {
+				int64_t res = op1 - op2;
+				return 1 & (((op1 & op2 & ~res) | (~op1 & ~op2 & res)) >> 63);
+			}
+			default: /* Unknown/Invalid operation */ return false;
 		}
-		return false;
 	}
 
 	/**********************************/
