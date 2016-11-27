@@ -1,5 +1,6 @@
-nop
-nop
+nop nop
 addi X0, XZR, 1;
 addi X0, X0, 2;
-halt
+jumphere:
+movi x0, jumphere
+br x0
