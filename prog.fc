@@ -1,10 +1,4 @@
 nop nop
-start:
-movi x0, 12
-movi x1, 11;
-cmp x0, x1;
-
-bge end
-
-b start
-end:
+movi x0, 10;
+addi sp, sp, 16;
+push x0

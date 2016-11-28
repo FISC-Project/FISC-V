@@ -454,44 +454,64 @@ private:
 	}
 
 	void ldur(ifmt_d_t * instr) {
-		x[instr->rt] = memory.read(x[instr->rn] + instr->dt_address, SZ_64);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		x[instr->rt] = memory.read(x[instr->rn] + addr, SZ_64);
 	}
 
 	void ldurb(ifmt_d_t * instr) {
-		x[instr->rt] = memory.read(x[instr->rn] + instr->dt_address, SZ_8);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		x[instr->rt] = memory.read(x[instr->rn] + addr, SZ_8);
 	}
 
 	void ldurh(ifmt_d_t * instr) {
-		x[instr->rt] = memory.read(x[instr->rn] + instr->dt_address, SZ_16);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		x[instr->rt] = memory.read(x[instr->rn] + addr, SZ_16);
 	}
 
 	void ldursw(ifmt_d_t * instr) {
-		x[instr->rt] = memory.read(x[instr->rn] + instr->dt_address, SZ_32);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		x[instr->rt] = memory.read(x[instr->rn] + addr, SZ_32);
 	}
 
 	void ldxr(ifmt_d_t * instr) {
-		x[instr->rt] = memory.read(x[instr->rn] + instr->dt_address, SZ_64);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		x[instr->rt] = memory.read(x[instr->rn] + addr, SZ_64);
 		/* TODO Atomic */
 	}
 
 	void stur(ifmt_d_t * instr) {
-		memory.write(x[instr->rn], x[instr->rt] + instr->dt_address, SZ_64);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		memory.write(x[instr->rn], x[instr->rt] + addr, SZ_64);
 	}
 
 	void sturb(ifmt_d_t * instr) {
-		memory.write(x[instr->rn], x[instr->rt] + instr->dt_address, SZ_8);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		memory.write(x[instr->rn], x[instr->rt] + addr, SZ_8);
 	}
 
 	void sturh(ifmt_d_t * instr) {
-		memory.write(x[instr->rn], x[instr->rt] + instr->dt_address, SZ_16);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		memory.write(x[instr->rn], x[instr->rt] + addr, SZ_16);
 	}
 
 	void sturw(ifmt_d_t * instr) {
-		memory.write(x[instr->rn], x[instr->rt] + instr->dt_address, SZ_32);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		memory.write(x[instr->rn], x[instr->rt] + addr, SZ_32);
 	}
 
 	void stxr(ifmt_d_t * instr) {
-		memory.write(x[instr->rn], x[instr->rt] + instr->dt_address, SZ_64);
+		int64_t addr = instr->dt_address;
+		if(addr & (1<<(9-1))) addr = -((~addr+1) & 0x1FF); /* Fix non 64-bit number signedness */
+		memory.write(x[instr->rn], x[instr->rt] + addr, SZ_64);
 		/* TODO Atomic */
 	}
 };
