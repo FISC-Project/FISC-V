@@ -1,4 +1,0 @@
-nop nop
-movi x0, 10;
-addi sp, sp, 16;
-push x0
