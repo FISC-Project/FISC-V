@@ -14,7 +14,7 @@ SET Exec_Filename=FISC-VM
 
 SET TOOLS="%~dp0\Tools"
 
-@ECHO Targetting IDE: %IDE_Name%
+@ECHO Targeting IDE: %IDE_Name%
 @ECHO.
 
 IF EXIST "build" @SET /P ProjectType=<build\projtype.txt
@@ -23,7 +23,6 @@ IF EXIST "build" (
 	IF NOT "%ProjectType%"=="%IDE_Name%" (
 		@ECHO -- Removing already existing project: %ProjectType%
 		@DEL "Project Solution*.*">nul 2>&1
-		@DEL "CMakelists.txt">nul 2>&1
 		@RMDIR build /S /Q
 		@RMDIR bin /S /Q
 		@MKDIR build
@@ -43,7 +42,6 @@ IF EXIST "build" (
 
 @CD build
 
-@%TOOLS%\printf "cmake_minimum_required(VERSION 3.7.1)\nproject(%Exec_Filename%)\n\nset(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)\nset(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})\n\ninclude_directories(include)\n\nfile(GLOB_RECURSE SOURCES ""src/*.h"" ""src/*.cpp"" ""src/*.hpp"")\n\nadd_executable(%Exec_Filename% ${SOURCES})" > ../CMakelists.txt
 @SET PATH=%PATH:C:\MinGW\msys\1.0\bin;=%
 cmake -G "%IDE_Name%" ..
 @SET PATH=%PATH%;C:\MinGW\msys\1.0\bin

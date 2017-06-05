@@ -1,0 +1,3 @@
+# add_subdirectory(VirtualMotherboard) # TODO: WE WILL DEAL WITH IO STUFF LATER
+
+add_library(FVMFISCPassIO FISCIOMachineModule.cpp FISCIOMachineConfigurator.cpp FISCIOMachineDebugger.cpp)

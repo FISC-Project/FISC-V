@@ -1,0 +1,14 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/bin
+/bin/Debug
+/build
+/toolchain/Windows/run.bat
+/toolchain/Windows/run-makefile.bat
+/toolchain/Windows/run-clean.bat
+/toolchain/Debian/run.sh
+/toolchain/Debian/run-makefile.sh
+/toolchain/Debian/run-clean.sh
+/Project Solution.sln
