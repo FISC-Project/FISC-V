@@ -2,9 +2,14 @@ cmake_minimum_required(VERSION 3.7.1)
 project(FISC-VM)
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/include)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
-include_directories(include)
+if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
+include_directories(include src)
 
 add_subdirectory(src)
 
@@ -12,7 +17,7 @@ add_executable(${PROJECT_NAME} src/FVM.cpp)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
-add_dependencies(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}
 	########## VM Infrastructure ##########
 	FVMDebug 
 	FVMAPILinux 
@@ -24,7 +29,35 @@ add_dependencies(${PROJECT_NAME}
 
 	########## Support Libraries ##########
 	FVMUtils
+)
 
+set_property( GLOBAL PROPERTY USE_FOLDERS ON)
+
+set_target_properties(
+	########## VM Infrastructure folder ##########
+	FVMDebug 
+	FVMAPILinux 
+	FVMAPIWindows 
+	FVMGenDebug
+	FVMPass
+	FVMRegistry
+	FVMRuntime
+
+	PROPERTIES FOLDER "VM Infrastructure"
+)
+
+set_target_properties(
+	########## Support Libraries folder ##########
+	FVMUtils
+
+	PROPERTIES FOLDER "Support Libraries"
+)
+
+#########################################################################
+############################ TARGET SPECIFIC ############################
+#########################################################################
+
+target_link_libraries(${PROJECT_NAME}
 	########## Machine Targets (!! add your target here !!) ##########
 	FVMFISCISA
 	FVMFISCPassError
@@ -33,5 +66,21 @@ add_dependencies(${PROJECT_NAME}
 	FVMFISCPassMemory
 	FVMFISCPassPipeline
 	FVMFISCPipeline
-	FVMFISCTargetRegistry
 )
+
+set_target_properties(
+	########## Machine Targets folder (!! add your target here !!) ##########
+	FVMFISCISA
+	FVMFISCPassError
+	FVMFISCPassInitFinit
+	FVMFISCPassIO
+	FVMFISCPassMemory
+	FVMFISCPassPipeline
+	FVMFISCPipeline
+
+	PROPERTIES FOLDER "Machine Targets"
+)
+
+#########################################################################
+#########################################################################
+#########################################################################

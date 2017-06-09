@@ -3,5 +3,3 @@ add_subdirectory(InitFinit)
 add_subdirectory(IO)
 add_subdirectory(Memory)
 add_subdirectory(Pipeline)
-
-add_library(FVMFISCTargetRegistry FISCTargetRegistry.cpp)

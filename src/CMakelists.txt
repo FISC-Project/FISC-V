@@ -7,36 +7,3 @@ add_subdirectory(Registry)
 add_subdirectory(Runtime)
 add_subdirectory(Target)
 add_subdirectory(Utils)
-
-set_property( GLOBAL PROPERTY USE_FOLDERS ON)
-
-set_target_properties(
-	FVMDebug 
-	FVMAPILinux 
-	FVMAPIWindows 
-	FVMGenDebug
-	FVMPass
-	FVMRegistry
-	FVMRuntime
-
-	PROPERTIES FOLDER "VM Infrastructure"
-)
-
-set_target_properties(
-	FVMFISCISA 
-	FVMFISCPassError
-	FVMFISCPassInitFinit
-	FVMFISCPassIO
-	FVMFISCPassMemory
-	FVMFISCPassPipeline
-	FVMFISCPipeline
-	FVMFISCTargetRegistry
-
-	PROPERTIES FOLDER "Machine Targets"
-)
-
-set_target_properties(
-	FVMUtils
-
-	PROPERTIES FOLDER "Support Libraries"
-)

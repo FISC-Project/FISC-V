@@ -1,22 +1,22 @@
 #include <fvm/Pass.h>
 #include <stdio.h>
 
-class PipelineModule : public Pass {
+class InitFinit : public Pass {
 public:
-	PipelineModule() : Pass(PASS_RUNTIME, 2) {}
+	InitFinit() : Pass(PASS_RUNTIME_INIT_FINIT, 0) {}
 
 	enum PassRetcode init() {
-		printf("- Initializing Pipeline\n");
+		printf("- Initializing FISC Target\n");
 		return PASS_RET_OK;
 	}
 
 	enum PassRetcode finit() {
-		printf("- Terminating Pipeline\n");
+		printf("- Closing and cleaning up the FISC implementation and target\n");
 		return PASS_RET_OK;
 	}
 
 	enum PassRetcode run() {
-		printf("Pipeline is running!\n");
+		printf("- Initializing FISC Implementation\n");
 		return PASS_RET_OK;
 	}
 

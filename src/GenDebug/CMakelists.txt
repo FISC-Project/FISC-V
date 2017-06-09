@@ -1,2 +1,5 @@
+string(REGEX MATCH "src/(.*)" source_path "${CMAKE_CURRENT_SOURCE_DIR}")
+string(REGEX REPLACE "src/(.*)" "\\1" after_source "${source_path}")
+file(GLOB_RECURSE HeaderFiles ${CMAKE_INCLUDE_PATH}/fvm/${after_source}/*.h)
 file(GLOB_RECURSE SourceFiles *.cpp)
-add_library(FVMGenDebug ${SourceFiles})
+add_library(FVMGenDebug ${SourceFiles} ${HeaderFiles})
