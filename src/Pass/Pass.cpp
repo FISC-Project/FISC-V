@@ -10,3 +10,21 @@ Pass::~Pass()
 {
 
 }
+
+InitPass::InitPass(unsigned int priority)
+: Pass(PASS_RUNTIME_INIT_FINIT, priority)
+{
+
+}
+
+ConfigPass::ConfigPass(unsigned int priority)
+: Pass(PASS_CONFIG, priority)
+{
+
+}
+
+RunPass::RunPass(unsigned int priority)
+	: Pass(PASS_RUNTIME, priority)
+{
+
+}

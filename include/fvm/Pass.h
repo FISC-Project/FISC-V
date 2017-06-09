@@ -32,4 +32,19 @@ public:
 	unsigned int priority;
 };
 
+class InitPass : public Pass {
+public:
+	InitPass(unsigned int priority);
+};
+
+class ConfigPass : public Pass {
+public:
+	ConfigPass(unsigned int priority);
+};
+
+class RunPass : public Pass {
+public:
+	RunPass(unsigned int priority);
+};
+
 #endif

@@ -33,4 +33,4 @@
 #include "Pipeline/FISCPipelineConfigurator.cpp"
 #include "Pipeline/FISCPipelineModule.cpp"
 
-REGISTER_TARGET(FISC, InitFinit, PipelineModule);
+REGISTER_TARGET(FISC, InitFinit, PipelineConfigurator, PipelineModule);

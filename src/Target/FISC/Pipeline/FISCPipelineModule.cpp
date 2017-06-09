@@ -1,9 +1,9 @@
 #include <fvm/Pass.h>
 #include <stdio.h>
 
-class PipelineModule : public Pass {
+class PipelineModule : public RunPass {
 public:
-	PipelineModule() : Pass(PASS_RUNTIME, 2) {}
+	PipelineModule() : RunPass(2) {}
 
 	enum PassRetcode init() {
 		printf("- Initializing Pipeline\n");
@@ -16,7 +16,7 @@ public:
 	}
 
 	enum PassRetcode run() {
-		printf("Pipeline is running!\n");
+		printf(">>>> Pipeline is running! <<<<\n");
 		return PASS_RET_OK;
 	}
 

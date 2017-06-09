@@ -1,9 +1,9 @@
 #include <fvm/Pass.h>
 #include <stdio.h>
 
-class InitFinit : public Pass {
+class InitFinit : public InitPass {
 public:
-	InitFinit() : Pass(PASS_RUNTIME_INIT_FINIT, 0) {}
+	InitFinit() : InitPass(0) {}
 
 	enum PassRetcode init() {
 		printf("- Initializing FISC Target\n");
