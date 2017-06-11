@@ -1,5 +1,5 @@
 #include <fvm/TargetRegistry.h>
-#include <conio.h>
+#include <fvm/Utils/Cmdline.h>
 #include <stdio.h>
 
 std::vector<TargetRegistry*> TargetRegistry::TheTargetList;
@@ -8,9 +8,10 @@ std::vector<TargetRegistry*> TargetRegistry::TheTargetList;
 
 int main(int argc, char ** argv)
 {
+	cmdlineParse(argc, argv);
+
 	TargetRegistry::launchTarget(0);
 
 	printf("\n--------------\n> Finished executing Virtual Machine");
-	_getch();
 	return 0;
 }

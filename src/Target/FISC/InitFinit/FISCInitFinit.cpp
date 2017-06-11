@@ -11,12 +11,11 @@ public:
 	}
 
 	enum PassRetcode finit() {
-		printf("- Closing and cleaning up the FISC implementation and target\n");
+		printf("- Terminating FISC Target\n");
 		return PASS_RET_OK;
 	}
 
 	enum PassRetcode run() {
-		printf("- Initializing FISC Implementation\n");
 		return PASS_RET_OK;
 	}
 

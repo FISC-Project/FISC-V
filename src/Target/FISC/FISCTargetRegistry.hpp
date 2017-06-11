@@ -1,3 +1,4 @@
+
 #include <fvm/TargetRegistry.h>
 
 /******************************************************************/
@@ -33,4 +34,8 @@
 #include "Pipeline/FISCPipelineConfigurator.cpp"
 #include "Pipeline/FISCPipelineModule.cpp"
 
-REGISTER_TARGET(FISC, InitFinit, PipelineConfigurator, PipelineModule);
+REGISTER_TARGET(FISC, 
+	InitFinit,
+	MemoryConfigurator, MemoryModule,
+	PipelineConfigurator, PipelineModule
+);

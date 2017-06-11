@@ -1,0 +1,13 @@
+#ifndef FISCISA_H_
+#define FISCISA_H_
+
+enum FISC_DATATYPE {
+	FISC_SZ_NULL,
+	FISC_SZ_8,
+	FISC_SZ_16,
+	FISC_SZ_32,
+	FISC_SZ_64,
+	FISC_SZ_COUNT
+};
+
+#endif
