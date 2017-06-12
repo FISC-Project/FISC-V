@@ -113,6 +113,9 @@ bool TargetRegistry::launchTarget(std::string targetName)
 			target->running = false;
 			return success;
 		}
+
+	/* Target not found */
+	DEBUG(DERROR, "Could not find target '%s'!", targetName.c_str());
 	return false;
 }
 
@@ -123,6 +126,8 @@ bool TargetRegistry::launchTarget(unsigned int targetIndex)
 		TargetRegistry::TheTargetList[targetIndex]->running = false;
 		return success;
 	} else {
+		/* Target not found */
+		DEBUG(DERROR, "Could not find the selected target with index %d!", targetIndex);
 		return false;
 	}
 }

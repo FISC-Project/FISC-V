@@ -86,15 +86,25 @@ public:
         /* Setup program file */
         if (cmdHasOpt(MEMORY_FLAG_BOOT_SHORT)) {
             std::pair<char, std::string> fileName = cmdQuery(MEMORY_FLAG_BOOT_SHORT);
+
+            DEBUG(DINFO, "Program name: %s", fileName.second.c_str());
             /* Create file only if it exists */
             if (programFile.create(fileName.second, MEMORY_PROGRAM_FILE_IOS_MODE))
                 success = PASS_RET_OK;
-        }
-        if (cmdHasOpt(MEMORY_FLAG_BOOT_LONG)) {
-            std::pair<std::string, std::string> fileName = cmdQuery(MEMORY_FLAG_BOOT_LONG);
-            /* Create file only if it exists */
-            if (programFile.create(fileName.second, MEMORY_PROGRAM_FILE_IOS_MODE))
-                success = PASS_RET_OK;
+            else
+                DEBUG(DERROR, "Could not load program '%s'!", fileName.second.c_str());
+        } else {
+            if (cmdHasOpt(MEMORY_FLAG_BOOT_LONG)) {
+                std::pair<std::string, std::string> fileName = cmdQuery(MEMORY_FLAG_BOOT_LONG);
+                /* Create file only if it exists */
+                if (programFile.create(fileName.second, MEMORY_PROGRAM_FILE_IOS_MODE))
+                    success = PASS_RET_OK;
+                else
+                    DEBUG(DERROR, "Could not load program '%s'!", fileName.second.c_str());
+            }
+            else {
+                DEBUG(DERROR, "Expected a bootloader program with argument -b <filename> or --boot <filename>. There is nothing to do for the VM.");
+            }
         }
 
         if (success == PASS_RET_ERR) {

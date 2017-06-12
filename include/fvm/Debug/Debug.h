@@ -6,6 +6,9 @@
 enum DEBUG_LEVEL {
 	DEBUG_LEVEL_NULL = -1,
 	DNONE,
+	DL1,
+	DL2,
+	DL3,
 	DALL,
 	DEBUG_LEVEL__COUNT
 };
@@ -43,13 +46,23 @@ extern void disableDebugging();
 extern bool setDebuggingLevel(enum DEBUG_LEVEL level);
 extern enum DEBUG_LEVEL getDebuggingLevel();
 extern bool isDebuggingEnabled();
+extern std::string debugLevelToStr(enum DEBUG_LEVEL level);
 extern bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry);
+extern bool setNewDefaultDebugType(enum DEBUG_KIND kind, std::string kindName);
 extern void debugEnableDisableColor(bool enable);
 
+namespace debug {
+extern bool changeDebugLevel(std::string kindName, enum DEBUG_TYPE type, enum DEBUG_LEVEL newLevel);
+extern bool changeDebugLevel(std::string kindName, enum DEBUG_LEVEL newLevel);
+
+extern bool DEBUG(enum DEBUG_KIND kind, std::string kindName, bool kindByName, enum DEBUG_TYPE type, bool override_flag, std::string fmt, va_list args);
 extern bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag, std::string fmt, ...);
 extern bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, std::string fmt, ...);
+extern bool DEBUG(std::string kindName, enum DEBUG_TYPE type, bool override_flag, std::string fmt, ...);
+extern bool DEBUG(std::string kindName, enum DEBUG_TYPE type, std::string fmt, ...);
 extern bool DEBUG(enum DEBUG_TYPE type, std::string fmt, ...);
 extern bool DEBUG(std::string fmt, ...);
+}
 
 #define PRINT(fmt, ...) DEBUG(DVM, DNORMAL, true, fmt, __VA_ARGS__)
 #define PRINTC(type, fmt, ...) DEBUG(DVM, type, true, fmt, __VA_ARGS__)

@@ -19,18 +19,24 @@ void setCmdlineFlags()
             debugLevel = cmdQuery("debug").second;
             if (debugLevel != NULLSTR) {
                 try {
-                    DEBUG(DINFO, "Debug level: %s", debugLevel.c_str());
-                    if (!setDebuggingLevel((enum DEBUG_LEVEL)std::stoi(debugLevel)))
+                    enum DEBUG_LEVEL lvl = (enum DEBUG_LEVEL)std::stoi(debugLevel);
+                    DEBUG(DINFO, "Debug level: %s", debugLevelToStr(lvl).c_str());
+                    if (!setDebuggingLevel(lvl))
                         throw - 1;
                 }
                 catch (...) {
                     DEBUG(DWARN, "Debug level '%s' is invalid", debugLevel.c_str());
                 }
             }
+            else {
+                /* No debug level was provided. We're assuming maximum debug level  */
+                setDebuggingLevel(DALL);
+            }
         }
         else {
             try {
-                DEBUG(DINFO, "Debug level: %s", debugLevel.c_str());
+                enum DEBUG_LEVEL lvl = (enum DEBUG_LEVEL)std::stoi(debugLevel);
+                DEBUG(DINFO, "Debug level: %s", debugLevelToStr(lvl).c_str());
                 if (!setDebuggingLevel((enum DEBUG_LEVEL)std::stoi(debugLevel)))
                     throw - 1;
             }
@@ -72,7 +78,7 @@ int main(int argc, char ** argv)
     /* Setup command line flags */
     /****************************/
     setCmdlineFlags();
-    
+
     if ((success = (launchTargetName == NULLSTR))) {
         DEBUG(DERROR, "You must provide the flag -t <target> or --target <target>");
     } else {
@@ -84,6 +90,8 @@ int main(int argc, char ** argv)
     }
     
     if (enableHeaderFooter) {
+        if(getDebuggingLevel() < DALL)
+            PRINTC(DINFO2, "\n");
         DEBUG(DNORMALH, "\n-------------------------------------------\n> ");
         PRINTC(DINFO2, "Finished executing Virtual Machine %s", success ? "(SUCCESS)" : "(FAILED) ");
     }

@@ -62,6 +62,11 @@ public:
 	bool lockAllResources(Pass * passID);
 	bool unlockAllResources(Pass * passID);
 
+	bool changeDebugLevel(enum DEBUG_TYPE type, enum DEBUG_LEVEL newLevel);
+	bool changeDebugLevel(enum DEBUG_LEVEL newLevel);
+	bool DEBUG(enum DEBUG_TYPE type, std::string fmt, ...);
+	bool DEBUG(std::string fmt, ...);
+
 	std::vector<std::pair<std::string, std::vector<std::string> > > whitelist;
 	void setWhitelist(std::vector<std::pair<std::string, std::vector<std::string> > > whitelist);
 

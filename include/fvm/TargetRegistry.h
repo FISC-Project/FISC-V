@@ -7,6 +7,8 @@
 #include <fvm/Utils/Macro.h>
 #include <fvm/Debug/Debug.h>
 
+using namespace debug;
+
 #define DECL_OBJ(prefix, classname) static classname prefix ## classname;
 #define DECL_OBJNAME_ADDR(prefix, objname) &prefix ## objname,
 #define SETOWNOBJNAME(prefix, objname) prefix ## objname.passName = STRING(objname); prefix ## objname.passNameLong = STRING(prefix ## objname);

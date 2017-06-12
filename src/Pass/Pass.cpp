@@ -1,7 +1,9 @@
 #include <fvm/Pass.h>
+#include <fvm/Debug/Debug.h>
+#include <stdarg.h>
 
 Pass::Pass(enum PassType type, unsigned int priority)
-: parentTarget(nullptr), isTargetSet(false), resourcesLocked(false)
+	: parentTarget(nullptr), isTargetSet(false), resourcesLocked(false)
 {
 	this->type = type;
 	this->priority = priority;
@@ -16,6 +18,8 @@ Pass::~Pass()
 bool Pass::setParentTargetContext(TargetRegistry * parentTarget)
 {
 	if(!isTargetSet) {
+		/* Create a new default debug entry for this pass while we're at it */
+		setNewDefaultDebugType(DCUSTOM, this->passName);
 		this->parentTarget = parentTarget;
 		isTargetSet = true;
 		return isTargetSet;
@@ -234,6 +238,34 @@ bool Pass::verifyPassID(Pass * passID, std::string resourceName)
 	}
 	/* No can do */
 	return false;
+}
+
+bool Pass::DEBUG(enum DEBUG_TYPE type, std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = debug::DEBUG(DEBUG_KIND_NULL, passName, true, type, false, fmt, args);
+	va_end(args);
+	return success;
+}
+
+bool Pass::DEBUG(std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = debug::DEBUG(DEBUG_KIND_NULL, passName, true, DNORMAL, false, fmt, args);
+	va_end(args);
+	return success;
+}
+
+bool Pass::changeDebugLevel(enum DEBUG_TYPE type, enum DEBUG_LEVEL newLevel)
+{
+	return debug::changeDebugLevel(passName, type, newLevel);
+}
+
+bool Pass::changeDebugLevel(enum DEBUG_LEVEL newLevel)
+{
+	return debug::changeDebugLevel(passName, newLevel);
 }
 
 InitPass::InitPass(unsigned int priority)

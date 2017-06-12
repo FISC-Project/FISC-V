@@ -5,24 +5,15 @@
 
 static bool debugging = false;
 static bool isDebuggingInitialized = false;
-static enum DEBUG_LEVEL debugLevel = DNONE;
-static std::vector<debugTypeEntry_t> debugTypeEntries;
 static bool colorEnabled = true;
 static bool firstLine = true;
+static enum DEBUG_LEVEL debugLevel = DALL;
+static std::vector<debugTypeEntry_t> debugTypeEntries;
 
 void initializeDebugging()
 {
 	/* Create standard debug types and kinds used by the VM */
-	debugTypeEntries = std::vector<debugTypeEntry_t>{
-		debugTypeEntry_t{ DNONE, DNORMAL,  DVM, "NONE", "INFO",    "VM"},  /* The debug type that is used when there is no debugging */
-		debugTypeEntry_t{ DALL,  DNORMAL,  DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used as a way to print normal text without potential meaning */
-		debugTypeEntry_t{ DALL,  DNORMALH, DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used as a way to print normal text without potential meaning (no header) */
-		debugTypeEntry_t{ DALL,  DGOOD,    DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used to print valid information */
-		debugTypeEntry_t{ DALL,  DINFO,    DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used to print general purpose information */
-		debugTypeEntry_t{ DALL,  DINFO2,   DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used to print general purpose information */
-		debugTypeEntry_t{ DALL,  DWARN,    DVM, "ALL",  "WARNING", "VM" }, /* The debug type that is used to print warnings */
-		debugTypeEntry_t{ DALL,  DERROR,   DVM, "ALL",  "ERROR",   "VM" }, /* The debug type that is used to print errors */
-	};
+	setNewDefaultDebugType(DVM, "VM");
 	isDebuggingInitialized = true;
 }
 
@@ -57,6 +48,18 @@ bool isDebuggingEnabled()
 	return debugging;
 }
 
+std::string debugLevelToStr(enum DEBUG_LEVEL level)
+{
+	switch (level) {
+	case DNONE: return "NONE";
+	case DL1:   return "LVL 1";
+	case DL2:   return "LVL 2";
+	case DL3:   return "LVL 3";
+	case DALL:  return "ALL";
+	default:    return "UNKNOWN LEVEL";
+	}
+}
+
 bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry)
 {
 	/* See if this debug entry type already exists */
@@ -70,6 +73,48 @@ bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry)
 	/* It doesn't. Push it into the debug entry type list */
 	debugTypeEntries.push_back(newDebugTypeEntry);	
 	return true;
+}
+
+bool setNewDefaultDebugType(enum DEBUG_KIND kind, std::string kindName)
+{
+	debugTypeEntries.push_back(debugTypeEntry_t{DNONE, DNORMAL,  kind, debugLevelToStr(DNONE), "INFO",    kindName }); /* The debug type that is used when there is no debugging */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DNORMAL,  kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used as a way to print normal text without potential meaning */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DNORMALH, kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used as a way to print normal text without potential meaning (no header) */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DGOOD,    kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used to print valid information */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DINFO,    kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used to print general purpose information */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DINFO2,   kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used to print general purpose information */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DWARN,    kind, debugLevelToStr(DALL),  "WARNING", kindName }); /* The debug type that is used to print warnings */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DERROR,   kind, debugLevelToStr(DALL),  "ERROR",   kindName }); /* The debug type that is used to print errors */
+	return true;
+}
+
+namespace debug {
+
+bool changeDebugLevel(std::string kindName, enum DEBUG_TYPE type, enum DEBUG_LEVEL newLevel)
+{
+	for (unsigned int i = 0; i < debugTypeEntries.size(); i++) {
+		if (strTolower(debugTypeEntries[i].kindName) == strTolower(kindName) && debugTypeEntries[i].type == type) {
+			debugTypeEntries[i].level = newLevel;
+			debugTypeEntries[i].levelName = debugLevelToStr(newLevel);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool changeDebugLevel(std::string kindName, enum DEBUG_LEVEL newLevel)
+{
+	bool found = false;
+	for (unsigned int i = 0; i < debugTypeEntries.size(); i++) {
+		if (strTolower(debugTypeEntries[i].kindName) == strTolower(kindName)) {
+			debugTypeEntries[i].level = newLevel;
+			debugTypeEntries[i].levelName = debugLevelToStr(newLevel);
+			found = true;
+		}
+	}
+	return found;
+}
+
 }
 
 void debugEnableDisableColor(bool enable)
@@ -147,7 +192,9 @@ static bool raw_print(std::string str, debugTypeEntry_t * debugTypeEntry, bool i
 
 #endif
 
-static bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag, std::string fmt, va_list args)
+namespace debug {
+
+bool DEBUG(enum DEBUG_KIND kind, std::string kindName, bool kindByName, enum DEBUG_TYPE type, bool override_flag, std::string fmt, va_list args)
 {
 	static char debugBuff[2048];
 	static char debugBuffHeader[128];
@@ -161,12 +208,29 @@ static bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag
 		initializeDebugging();
 
 	for (unsigned int i = 0; i < debugTypeEntries.size(); i++) {
-		if (debugTypeEntries[i].type == type && debugTypeEntries[i].kind == kind)
-			debugTypeEntry = &debugTypeEntries[i];
+		if (kindByName) {
+			if (debugTypeEntries[i].type == type && strTolower(debugTypeEntries[i].kindName) == strTolower(kindName)) {
+				debugTypeEntry = &debugTypeEntries[i];
+				break;
+			}
+		}
+		else {
+			if (debugTypeEntries[i].type == type && debugTypeEntries[i].kind == kind) {
+				debugTypeEntry = &debugTypeEntries[i];
+				break;
+			}
+		}
+
 	}
 
 	if (debugTypeEntry == nullptr)
 		return false;
+
+	/* Check if the debug level condition can be satisfied */
+	if (!override_flag) {
+		if(debugTypeEntry->level > debugLevel)
+			return false; /* Oops, the current debug level is too low for this entry. Can't show the debug message */
+	}
 
 	if (!override_flag && type != DNORMALH) {
 		sprintf(debugBuffHeader, "%s (@%s, %s)",
@@ -192,7 +256,7 @@ bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag, std::
 {
 	va_list args;
 	va_start(args, fmt);
-	bool success = DEBUG(kind, type, override_flag, fmt, args);
+	bool success = DEBUG(kind, "", false, type, override_flag, fmt, args);
 	va_end(args);
 	return success;
 }
@@ -201,7 +265,25 @@ bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, std::string fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	bool success = DEBUG(kind, type, false, fmt, args);
+	bool success = DEBUG(kind, "", false, type, false, fmt, args);
+	va_end(args);
+	return success;
+}
+
+bool DEBUG(std::string kindName, enum DEBUG_TYPE type, bool override_flag, std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = DEBUG(DEBUG_KIND_NULL, kindName, true, type, override_flag, fmt, args);
+	va_end(args);
+	return success;
+}
+
+bool DEBUG(std::string kindName, enum DEBUG_TYPE type, std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = DEBUG(DEBUG_KIND_NULL, kindName, true, type, false, fmt, args);
 	va_end(args);
 	return success;
 }
@@ -210,7 +292,7 @@ bool DEBUG(enum DEBUG_TYPE type, std::string fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	bool success = DEBUG(DVM, type, false, fmt, args);
+	bool success = DEBUG(DVM, "", false, type, false, fmt, args);
 	va_end(args);
 	return success;
 }
@@ -219,7 +301,9 @@ bool DEBUG(std::string fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	bool success = DEBUG(DVM, DNORMAL, false, fmt, args);
+	bool success = DEBUG(DVM, "", false, DNORMAL, false, fmt, args);
 	va_end(args);
 	return success;
+}
+
 }
