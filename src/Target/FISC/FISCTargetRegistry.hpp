@@ -31,11 +31,11 @@
 /*****************/
 /* FISC PIPELINE */
 /*****************/
-#include "Pipeline/FISCPipelineConfigurator.cpp"
-#include "Pipeline/FISCPipelineModule.cpp"
+#include "CPU/FISCCPUConfigurator.cpp"
+#include "CPU/FISCCPUModule.cpp"
 
 REGISTER_TARGET(FISC, 
 	InitFinit,
 	MemoryConfigurator, MemoryModule,
-	PipelineConfigurator, PipelineModule
+	CPUConfigurator, CPUModule
 );

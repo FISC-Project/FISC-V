@@ -1,2 +1,0 @@
-file(GLOB_RECURSE SourceFiles *.cpp)
-add_library(FVMFISCPipeline ${SourceFiles})

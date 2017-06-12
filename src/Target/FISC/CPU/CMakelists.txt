@@ -1,0 +1,2 @@
+file(GLOB_RECURSE SourceFiles *.cpp *.h)
+add_library(FVMFISCPassCPU ${SourceFiles})

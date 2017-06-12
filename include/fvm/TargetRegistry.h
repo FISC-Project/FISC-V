@@ -5,6 +5,7 @@
 #include <string>
 #include <fvm/Utils/String.h>
 #include <fvm/Utils/Macro.h>
+#include <fvm/Debug/Debug.h>
 
 #define DECL_OBJ(prefix, classname) static classname prefix ## classname;
 #define DECL_OBJNAME_ADDR(prefix, objname) &prefix ## objname,
@@ -32,15 +33,16 @@ public:
 	TargetRegistry(std::string targetName, std::vector<Pass*> passList);
 	~TargetRegistry();
 
-	static void launchTarget(std::string targetName);
-	static void launchTarget(unsigned int targetIndex);
+	static bool launchTarget(std::string targetName);
+	static bool launchTarget(unsigned int targetIndex);
 
 	Pass * getPass(Pass * passID, std::string passName);
 	Pass * getPass(Pass * passID, unsigned int passIndex);
 	
-	void run();
+	bool run();
 
 private:
+	bool running;
 	std::string targetName;
 	std::vector<Pass*> passList;
 };

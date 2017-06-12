@@ -49,9 +49,9 @@ void File::close()
 
 unsigned int File::fileSize()
 {
-	unsigned int curPos = fileHandle.tellg();
+	unsigned int curPos = (unsigned int)fileHandle.tellg();
 	fileHandle.seekg(0, fileHandle.end);
-	unsigned int size = fileHandle.tellg();
+	unsigned int size = (unsigned int)fileHandle.tellg();
 	fileHandle.seekg(curPos);
 	return size;
 }

@@ -9,6 +9,8 @@ static vector<std::pair<string, string>> opts_list;
 
 char isOpt(string opt)
 {
+	if(strIsNumber(opt))
+		return 0;
 	return !opt.find("--") ? 2 : !opt.find("-") ? 1 : 0;
 }
 
@@ -81,9 +83,27 @@ void cmdlineParse(int argc, char ** argv)
 		string opt = string(argv[ctr++]);
 		char opt_type;
 		if ((opt_type = isOpt(opt)))
-			if (opt_type == 1)
-				cmdPushSingle(opt, ctr < argc ? string(argv[ctr]) : NULLSTR);
-			else if (opt_type == 2)
-				cmdPush(opt, ctr < argc ? string(argv[ctr]) : NULLSTR);
+			if (opt_type == 1) {
+				if (ctr < argc) {
+					if (isOpt(string(argv[ctr])))
+						cmdPushSingle(opt, NULLSTR);
+					else
+						cmdPushSingle(opt, string(argv[ctr]));
+				}
+				else {
+					cmdPushSingle(opt, NULLSTR);
+				}
+			}
+			else if (opt_type == 2) {
+				if (ctr < argc) {
+					if (isOpt(string(argv[ctr])))
+						cmdPush(opt, NULLSTR);
+					else
+						cmdPush(opt, string(argv[ctr]));
+				}
+				else {
+					cmdPush(opt, NULLSTR);
+				}
+			}
 	}
 }

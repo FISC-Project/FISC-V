@@ -21,7 +21,7 @@
 #include <fvm/Utils/Bit.h>
 #include <fvm/TargetRegistry.h>
 #include "FISCMemoryConfigurator.cpp"
-#include "../Pipeline/ISA/FISCISA.h"
+#include "../CPU/ISA/FISCISA.h"
 #include <stdio.h>
 
 class MemoryModule : public RunPass {
@@ -31,7 +31,7 @@ private:
     #define MEMORY_MODULE_PRIORITY 1 /* The execution priority of this module */
 
     /* List of permissions for external Passes that want to use the resources of this Pass */
-    #define WHITELIST_MEM_MOD {DECL_WHITELIST_ALL(PipelineModule)}
+    #define WHITELIST_MEM_MOD {DECL_WHITELIST_ALL(CPUModule)}
 #pragma endregion
 
 #pragma region REGION 2: THE MEMORY STRUCTURE DEFINITION (IMPL. SPECIFIC)
@@ -41,10 +41,9 @@ private:
 #pragma endregion
 
 #pragma region REGION 3: THE MEMORY BEHAVIOUR (IMPL. SPECIFIC)
-
-
 public:
-    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool align) {
+    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool align)
+    {
         /* Align (or not) the address */
         if(align)
             alignAddress(address, dataType);
@@ -79,7 +78,8 @@ public:
         return (uint64_t)-1;
     }
 
-    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool align) {
+    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool align)
+    {
         /* Align (or not) the address */
         if (align)
             alignAddress(address, dataType);
@@ -119,7 +119,8 @@ public:
     }
 
 private:
-    uint32_t alignAddress(uint32_t & address, enum FISC_DATATYPE dataType) {
+    uint32_t alignAddress(uint32_t & address, enum FISC_DATATYPE dataType)
+    {
         switch (dataType) {
             case FISC_SZ_8: /* No need to align */       break;
             case FISC_SZ_16: address = ALIGN16(address); break;
@@ -130,7 +131,8 @@ private:
         return address;
     }
 
-    bool isAddressValid(uint32_t address, enum FISC_DATATYPE dataType) {
+    bool isAddressValid(uint32_t address, enum FISC_DATATYPE dataType)
+    {
         switch (dataType) {
             case FISC_SZ_8: /* Intentional fallthrough */
             case FISC_SZ_16: 
@@ -148,13 +150,14 @@ public:
         setWhitelist(WHITELIST_MEM_MOD);
     }
 
-    enum PassRetcode init() {
+    enum PassRetcode init()
+    {
         enum PassRetcode success = PASS_RET_OK;
         /* Fetch Memory Configurator Pass */
         if (!(mconf = GET_PASS(MemoryConfigurator))) {
             /* TODO: We were unable to find a MemoryConfigurator pass!
                We cannot continue the execution of this pass */
-            printf("\n>> ERROR: Could not fetch the Memory Configurator Pass!\n\n");
+            DEBUG(DERROR, "Could not fetch the Memory Configurator Pass!");
             success = PASS_RET_ERR;
         }
 
@@ -172,23 +175,26 @@ public:
                 }
             }
             mconf->programFile.close();
-            printf("- Loaded %d bytes into memory\n", (unsigned int)mconf->loadedProgramSize);
+            DEBUG(DINFO, "Loaded %d bytes into memory", (unsigned int)mconf->loadedProgramSize);
         }
         return success;
     }
     
-    enum PassRetcode finit() {
-        printf("- Terminating Memory\n");
+    enum PassRetcode finit()
+    {
+        DEBUG(DGOOD, "Terminating Memory");
         return PASS_RET_OK;
     }
 
-    enum PassRetcode run() {
+    enum PassRetcode run()
+    {
         /* TODO: For now we don't want to keep anything running on this thread.
            We're keeping it relatively simple (for now!!) */
         return PASS_RET_OK;
     }
 
-    enum PassRetcode watchdog() {
+    enum PassRetcode watchdog()
+    {
         return PASS_RET_OK;
     }
 #pragma endregion

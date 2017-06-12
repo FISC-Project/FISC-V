@@ -1,0 +1,225 @@
+#include <fvm/Debug/Debug.h>
+#include <fvm/Utils/String.h>
+#include <vector>
+#include <iostream>
+
+static bool debugging = false;
+static bool isDebuggingInitialized = false;
+static enum DEBUG_LEVEL debugLevel = DNONE;
+static std::vector<debugTypeEntry_t> debugTypeEntries;
+static bool colorEnabled = true;
+static bool firstLine = true;
+
+void initializeDebugging()
+{
+	/* Create standard debug types and kinds used by the VM */
+	debugTypeEntries = std::vector<debugTypeEntry_t>{
+		debugTypeEntry_t{ DNONE, DNORMAL,  DVM, "NONE", "INFO",    "VM"},  /* The debug type that is used when there is no debugging */
+		debugTypeEntry_t{ DALL,  DNORMAL,  DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used as a way to print normal text without potential meaning */
+		debugTypeEntry_t{ DALL,  DNORMALH, DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used as a way to print normal text without potential meaning (no header) */
+		debugTypeEntry_t{ DALL,  DGOOD,    DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used to print valid information */
+		debugTypeEntry_t{ DALL,  DINFO,    DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used to print general purpose information */
+		debugTypeEntry_t{ DALL,  DINFO2,   DVM, "ALL",  "INFO",    "VM" }, /* The debug type that is used to print general purpose information */
+		debugTypeEntry_t{ DALL,  DWARN,    DVM, "ALL",  "WARNING", "VM" }, /* The debug type that is used to print warnings */
+		debugTypeEntry_t{ DALL,  DERROR,   DVM, "ALL",  "ERROR",   "VM" }, /* The debug type that is used to print errors */
+	};
+	isDebuggingInitialized = true;
+}
+
+void enableDebugging()
+{
+	if(!isDebuggingInitialized)
+		initializeDebugging();
+	debugging = true;
+}
+
+void disableDebugging()
+{
+	debugging = false;
+}
+
+bool setDebuggingLevel(enum DEBUG_LEVEL level)
+{
+	if(isDebuggingEnabled() && level > DEBUG_LEVEL_NULL && level < DEBUG_LEVEL__COUNT)
+		debugLevel = level;
+	else
+		return false;
+	return true;
+}
+
+enum DEBUG_LEVEL getDebuggingLevel()
+{
+	return debugLevel;
+}
+
+bool isDebuggingEnabled()
+{
+	return debugging;
+}
+
+bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry)
+{
+	/* See if this debug entry type already exists */
+	for (debugTypeEntry_t entry : debugTypeEntries) {
+		if(entry.level == newDebugTypeEntry.level && strTolower(entry.levelName) == strTolower(newDebugTypeEntry.levelName) &&
+		   entry.type == newDebugTypeEntry.type   && strTolower(entry.typeName) == strTolower(newDebugTypeEntry.typeName) &&
+		   entry.kind == newDebugTypeEntry.kind   && strTolower(entry.kindName) == strTolower(newDebugTypeEntry.kindName))
+			return false;
+	}
+
+	/* It doesn't. Push it into the debug entry type list */
+	debugTypeEntries.push_back(newDebugTypeEntry);	
+	return true;
+}
+
+void debugEnableDisableColor(bool enable)
+{
+	colorEnabled = enable;
+}
+
+#ifdef __linux__
+
+static bool raw_print(std::string str, debugTypeEntry_t * debugTypeEntry, bool isMsgHeader)
+{
+	/* TODO */
+}
+
+#elif _WIN32
+
+#include <fvm/Host/Windows/WindowsAPI.h>
+
+static bool raw_print(std::string str, debugTypeEntry_t * debugTypeEntry, bool isMsgHeader)
+{
+	WORD colorAttribute = winapi_console_getDefaultAttr();
+	BOOL success = FALSE;
+
+	if(debugTypeEntry)
+		switch (debugTypeEntry->type) {
+		case DNORMAL: case DNORMALH:
+			if(colorEnabled) colorAttribute = winapi_console_getDefaultAttr();
+			success = winapi_console_print(std::cout, str, colorAttribute);
+			break;
+		case DGOOD:
+			if (colorEnabled) {
+				if (isMsgHeader) colorAttribute = GREEN_FADE_BACKGROUND | WHITE_TEXT;
+				else colorAttribute = WHITE_TEXT;
+			}
+			success = winapi_console_print(std::cout, str, colorAttribute);
+			break;
+		case DINFO: 
+			if (colorEnabled) {
+				if(isMsgHeader) colorAttribute = BLUE_BACKGROUND | WHITE_TEXT;
+				else colorAttribute = WHITE_TEXT;
+			}
+			success = winapi_console_print(std::clog, str, colorAttribute);
+			break;
+		case DINFO2:
+			if (colorEnabled) {
+				if (isMsgHeader) colorAttribute = BLUE_BACKGROUND | WHITE_TEXT;
+				else colorAttribute = BLUE_BACKGROUND | WHITE_TEXT;
+			}
+			success = winapi_console_print(std::clog, str, colorAttribute);
+			break;
+		case DWARN:
+			if (colorEnabled) {
+				if (isMsgHeader) colorAttribute = YELLOW_BACKGROUND;
+				else colorAttribute = WHITE_FADE_BACKGROUND;
+			}
+			success = winapi_console_print(std::cerr, str, colorAttribute);
+			break;
+		case DERROR:
+			if (colorEnabled) {
+				if (isMsgHeader) colorAttribute = RED_BACKGROUND | WHITE_TEXT;
+				else colorAttribute = RED_FADE_BACKGROUND | WHITE_TEXT;
+			}
+			success = winapi_console_print(std::cerr, str, colorAttribute);
+			break;
+		}
+	else {
+		colorAttribute = winapi_console_getDefaultAttr();
+		success = winapi_console_print(std::cout, str, colorAttribute);
+	}
+		
+	/* Restore console attributes */
+	winapi_console_setAttr(winapi_console_getDefaultAttr());
+	return success == TRUE ? true : false;
+}
+
+#endif
+
+static bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag, std::string fmt, va_list args)
+{
+	static char debugBuff[2048];
+	static char debugBuffHeader[128];
+	debugTypeEntry_t * debugTypeEntry = nullptr;
+
+	if(!override_flag)
+		if (!isDebuggingEnabled())
+			return false;
+
+	if (!isDebuggingInitialized)
+		initializeDebugging();
+
+	for (unsigned int i = 0; i < debugTypeEntries.size(); i++) {
+		if (debugTypeEntries[i].type == type && debugTypeEntries[i].kind == kind)
+			debugTypeEntry = &debugTypeEntries[i];
+	}
+
+	if (debugTypeEntry == nullptr)
+		return false;
+
+	if (!override_flag && type != DNORMALH) {
+		sprintf(debugBuffHeader, "%s (@%s, %s)",
+				debugTypeEntry->typeName.c_str(),
+				debugTypeEntry->kindName.c_str(),
+				debugTypeEntry->levelName.c_str());
+		if(firstLine) {
+			raw_print("> ", nullptr, false);
+			firstLine = false;
+		} else {
+			raw_print("\n> ", nullptr, false);
+		}
+
+		raw_print(std::string(debugBuffHeader), debugTypeEntry, true);
+		fmt = ": " + fmt; /* Prepend colon and space */
+	}
+
+	vsprintf(debugBuff, fmt.c_str(), args);
+	return raw_print(std::string(debugBuff), debugTypeEntry, false);
+}
+
+bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag, std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = DEBUG(kind, type, override_flag, fmt, args);
+	va_end(args);
+	return success;
+}
+
+bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = DEBUG(kind, type, false, fmt, args);
+	va_end(args);
+	return success;
+}
+
+bool DEBUG(enum DEBUG_TYPE type, std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = DEBUG(DVM, type, false, fmt, args);
+	va_end(args);
+	return success;
+}
+
+bool DEBUG(std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = DEBUG(DVM, DNORMAL, false, fmt, args);
+	va_end(args);
+	return success;
+}

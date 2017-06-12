@@ -59,11 +59,13 @@ public:
 
 #pragma region REGION 3: THE MEMORY CONFIGURATION IMPLEMENTATION (IMPL SPECIFIC)
 public:
-    uint64_t getMemSize() {
+    uint64_t getMemSize()
+    {
         return theMemory.size();
     }
 
-    uint64_t getProgSize() {
+    uint64_t getProgSize()
+    {
         return loadedProgramSize;
     }
 #pragma endregion
@@ -76,9 +78,10 @@ public:
         setWhitelist(WHITELIST_MEM_CONFIG);
     }
     
-    enum PassRetcode init() {
+    enum PassRetcode init()
+    {
         enum PassRetcode success = PASS_RET_ERR;
-        printf("- Initializating Memory\n");
+        DEBUG(DGOOD, "Initializating Memory");
 
         /* Setup program file */
         if (cmdHasOpt(MEMORY_FLAG_BOOT_SHORT)) {
@@ -100,18 +103,20 @@ public:
             will not be able to continue, thus forcing every other
             single module (on this target only) to cancel its current
             operations. */
-            printf("\n>> ERROR: Could not initialize the Memory Configurator Pass!\n\n");
+            DEBUG(DERROR, "Could not initialize the Memory Configurator Pass!");
         }
 
         return success;
     }
 
-    enum PassRetcode finit() {
+    enum PassRetcode finit()
+    {
         /* Nothing to do for now */
         return PASS_RET_OK;
     }
 
-    enum PassRetcode run() {
+    enum PassRetcode run()
+    {
         /* For now we don't have anything to configure.
            In the future, we might want to read and parse a config file (using init() function and not run())
            and select the desired configurations on the parsed results here.
@@ -120,7 +125,8 @@ public:
         return PASS_RET_OK;
     }
 
-    enum PassRetcode watchdog() {
+    enum PassRetcode watchdog()
+    {
         return PASS_RET_OK;
     }
 #pragma endregion

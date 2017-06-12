@@ -1,2 +1,0 @@
-file(GLOB_RECURSE SourceFiles *.cpp *.h)
-add_library(FVMFISCISA ${SourceFiles})

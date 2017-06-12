@@ -6,12 +6,12 @@ public:
 	InitFinit() : InitPass(0) {}
 
 	enum PassRetcode init() {
-		printf("- Initializing FISC Target\n");
+		DEBUG(DGOOD, "Initializing FISC Target");
 		return PASS_RET_OK;
 	}
 
 	enum PassRetcode finit() {
-		printf("- Terminating FISC Target\n");
+		DEBUG(DGOOD, "Terminating FISC Target");
 		return PASS_RET_OK;
 	}
 

@@ -1,4 +1,0 @@
-add_subdirectory(ISA)
-add_subdirectory(Stage)
-
-add_library(FVMFISCPassPipeline FISCPipelineConfigurator.cpp FISCPipelineModule.cpp FISCPipelineDebugger.cpp)

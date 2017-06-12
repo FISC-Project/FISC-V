@@ -3,6 +3,7 @@
 #include <algorithm>
 
 TargetRegistry::TargetRegistry(std::string targetName, std::vector<Pass*> passList)
+: running(false)
 {
 	this->targetName = targetName;
 	TargetRegistry::TheTargetList.push_back(this);
@@ -15,7 +16,7 @@ TargetRegistry::~TargetRegistry()
 
 }
 
-void TargetRegistry::run()
+bool TargetRegistry::run()
 {
 	std::vector<Pass*> sublistPassInitFinit;
 	std::vector<Pass*> sublistPassConfig;
@@ -54,27 +55,36 @@ void TargetRegistry::run()
 		return lhs->priority < rhs->priority;
 	});
 
+	running = true;
+
 	/* First run initilization passes (the 2 foreach loops were intentional) */
 	for (auto initFinitPass : sublistPassInitFinit)
-		initFinitPass->init(); /* Initialize target parameters */
+		if(initFinitPass->init() != PASS_RET_OK) /* Initialize target parameters */
+			return false;
 	for (auto initFinitPass : sublistPassInitFinit)
-		initFinitPass->run(); /* Initialize the machine at the implementation level */
+		if(initFinitPass->run() != PASS_RET_OK) /* Initialize the machine at the implementation level */
+			return false;
 
 	/* Now run config pass */
 	for (auto configPass : sublistPassConfig)
 	{
-		configPass->init();
-		configPass->run();
-		configPass->finit();
+		if(configPass->init() != PASS_RET_OK)
+			return false;
+		if(configPass->run() != PASS_RET_OK)
+			return false;
+		if(configPass->finit() != PASS_RET_OK)
+			return false;
 	}
 
 	/* Initialize all machine implementations */
 	for (auto runPass : sublistPassRun)
-		runPass->init();
+		if(runPass->init() != PASS_RET_OK)
+			return false;
 
 	/* Execute all machine implementations */
 	for (auto runPass : sublistPassRun)
-		runPass->run();
+		if(runPass->run() != PASS_RET_OK)
+			return false;
 
 	/* The main thread will now stay here polling each 
 	 * Watchdog pass and waiting for any close request 
@@ -83,27 +93,44 @@ void TargetRegistry::run()
 	
 	/* Close and cleanup all machine implementations in reverse order */
 	for(int i = sublistPassRun.size() - 1; i >= 0; i--)
-		sublistPassRun[i]->finit();
+		if(sublistPassRun[i]->finit() != PASS_RET_OK)
+			return false;
 
 	/* Finally, run finit passes */
 	for (auto initFinitPass : sublistPassInitFinit)
-		initFinitPass->finit();
+		if(initFinitPass->finit() != PASS_RET_OK)
+			return false;
+
+	running = false;
+	return true;
 }
 
-void TargetRegistry::launchTarget(std::string targetName)
+bool TargetRegistry::launchTarget(std::string targetName)
 {
-
+	for (auto target : TargetRegistry::TheTargetList)
+		if(strTolower(target->targetName) == strTolower(targetName)) {
+			bool success = target->run();
+			target->running = false;
+			return success;
+		}
+	return false;
 }
 
-void TargetRegistry::launchTarget(unsigned int targetIndex)
+bool TargetRegistry::launchTarget(unsigned int targetIndex)
 {
-	TargetRegistry::TheTargetList[targetIndex]->run();
+	if(targetIndex >= 0 && targetIndex <  TargetRegistry::TheTargetList.size()) {
+		bool success = TargetRegistry::TheTargetList[targetIndex]->run();
+		TargetRegistry::TheTargetList[targetIndex]->running = false;
+		return success;
+	} else {
+		return false;
+	}
 }
 
 Pass * TargetRegistry::getPass(Pass * passID, std::string passName)
 {
 	for(auto pass : passList)
-		if(pass->passName == passName) {
+		if(strTolower(pass->passName) == strTolower(passName)) {
 			if(pass->verifyPassID(passID))
 				return pass;
 			else

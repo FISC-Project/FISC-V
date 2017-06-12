@@ -59,24 +59,20 @@ set_target_properties(
 
 target_link_libraries(${PROJECT_NAME}
 	########## Machine Targets (!! add your target here !!) ##########
-	FVMFISCISA
 	FVMFISCPassError
 	FVMFISCPassInitFinit
 	FVMFISCPassIO
 	FVMFISCPassMemory
-	FVMFISCPassPipeline
-	FVMFISCPipeline
+	FVMFISCPassCPU
 )
 
 set_target_properties(
 	########## Machine Targets folder (!! add your target here !!) ##########
-	FVMFISCISA
 	FVMFISCPassError
 	FVMFISCPassInitFinit
 	FVMFISCPassIO
 	FVMFISCPassMemory
-	FVMFISCPassPipeline
-	FVMFISCPipeline
+	FVMFISCPassCPU
 
 	PROPERTIES FOLDER "Machine Targets"
 )

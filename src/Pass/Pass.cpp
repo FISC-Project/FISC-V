@@ -81,7 +81,7 @@ bool Pass::releaseResource(Pass * passID, std::string resourceName)
 	if (resourcesLocked) return false; /* Can't touch these if they're locked */
 	if (!verifyPassID(passID, resourceName)) return false;
 	for (unsigned int i = 0; i < resourceList.size(); i++)
-		if (resourceList[i].name == resourceName) {
+		if (strTolower(resourceList[i].name) == strTolower(resourceName)) {
 			resourceList.erase(resourceList.begin() + i);
 			break;
 		}
@@ -93,7 +93,7 @@ void * Pass::getResource(Pass * passID, std::string resourceName)
 	if (resourcesLocked) return nullptr; /* Can't touch these if they're locked */
 	if (!verifyPassID(passID, resourceName)) return nullptr;
 	for(passResource_t res : resourceList)
-		if (res.name == resourceName)
+		if (strTolower(res.name) == strTolower(resourceName))
 			return res.ptr;
 	/* Couldn't find the resource */
 	return nullptr;
@@ -104,7 +104,7 @@ void * Pass::getResourceFn(Pass * passID, std::string resourceName)
 	if (resourcesLocked) return nullptr; /* Can't touch these if they're locked */
 	if (!verifyPassID(passID, resourceName)) return nullptr;
 	for (passResource_t res : resourceList)
-		if (res.name == resourceName)
+		if (strTolower(res.name) == strTolower(resourceName))
 			return switchResourceFn(passID, resourceName);
 	/* Couldn't find the resource */
 	return nullptr;
@@ -115,7 +115,7 @@ bool Pass::lockResource(Pass * passID, std::string resourceName)
 	if (resourcesLocked) return false; /* Can't touch these if they're locked */
 	if (!verifyPassID(passID, resourceName)) return false;
 	for (passResource_t res : resourceList)
-		if (res.name == resourceName) {
+		if (strTolower(res.name) == strTolower(resourceName)) {
 			/* Deny access to the data */
 			res.ptr = nullptr;
 			res.locked = true;
@@ -129,7 +129,7 @@ bool Pass::unlockResource(Pass * passID, std::string resourceName)
 	if (resourcesLocked) return false; /* Can't touch these if they're locked */
 	if (!verifyPassID(passID, resourceName)) return false;
 	for (passResource_t res : resourceList)
-		if (res.name == resourceName) {
+		if (strTolower(res.name) == strTolower(resourceName)) {
 			/* Restore access */
 			res.ptr = res.ptr_saved;
 			res.locked = false;
@@ -184,9 +184,13 @@ bool Pass::verifyPassID(Pass * passID)
 		std::string passName = passID->passName;
 		if(!whitelist.size())
 			return true; /* The whitelist is empty. Just give access to everyone */
-		for (std::pair<std::string, std::vector<std::string> > whitelistEntry : whitelist)
-			if (whitelistEntry.first == passID->passName || whitelistEntry.first == passID->passNameLong)
+		for (std::pair<std::string, std::vector<std::string> > whitelistEntry : whitelist) {
+			if (strTolower(whitelistEntry.first) == strTolower(passID->passName) || 
+				strTolower(whitelistEntry.first) == strTolower(passID->passNameLong))
+			{
 				return true; /* Ok, this Pass has permission */
+			}
+		}
 	}
 	/* No can do */
 	return false;
@@ -205,20 +209,22 @@ bool Pass::verifyPassID(Pass * passID, std::string resourceName)
 	
 	/* Ok, so does the calling Pass have access to this particular resource? */
 	for (std::pair<std::string, std::vector<std::string> > whitelistEntry : whitelist) {
-		if (whitelistEntry.first == passID->passName || whitelistEntry.first == passID->passNameLong) {
+		if (strTolower(whitelistEntry.first) == strTolower(passID->passName) || 
+			strTolower(whitelistEntry.first) == strTolower(passID->passNameLong))
+		{
 			if(!whitelistEntry.second.size()) {
 				/* Before we declare victory, let's see if the resource is lcoked */
 				for (auto res : resourceList)
-					if (res.name == resourceName && res.locked)
+					if (strTolower(res.name) == strTolower(resourceName) && res.locked)
 						return false; /* Oops, the Pass almost got it. Unfortunately, the resource is locked, even if the Pass has permission */
 				/* The Pass has permission but the resource list is empty. This means the calling Pass can have everything */
 				return true;
 			} else {
 				for(std::string resName : whitelistEntry.second) {
-					if(resName == resourceName) {
+					if(strTolower(resName) == strTolower(resourceName)) {
 						/* Before we declare victory, let's see if the resource is lcoked */
 						for(auto res : resourceList)
-							if(res.name == resourceName && res.locked)
+							if(strTolower(res.name) == strTolower(resourceName) && res.locked)
 								return false; /* Oops, the Pass almost got it. Unfortunately, the resource is locked, even if the Pass has permission */
 						return true; /* Yep, the Pass has total access. At least to this particular resource */
 					}

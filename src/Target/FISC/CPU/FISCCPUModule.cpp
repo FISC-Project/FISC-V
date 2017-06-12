@@ -2,48 +2,55 @@
 #include <fvm/Pass.h>
 #include <fvm/Utils/Cmdline.h>
 #include "ISA/FISCISA.h"
-#include "FISCPipelineConfigurator.cpp"
+#include "FISCCPUConfigurator.cpp"
 #include "../Memory/FISCMemoryModule.cpp"
 #include <stdio.h>
 
-class PipelineModule : public RunPass {
+class CPUModule : public RunPass {
 
 private:
 	MemoryModule * memory; /* The main memory handle */
 
 public:
-	PipelineModule() : RunPass(2) {}
+	CPUModule() : RunPass(2) 
+	{
+		
+	}
 
-	enum PassRetcode init() {
+	enum PassRetcode init()
+	{
 		enum PassRetcode success = PASS_RET_OK;
-		printf("- Initializing Pipeline\n");
+		DEBUG(DGOOD, "Initializing CPU");
 
 		/* Fetch Memory Module Pass */
 		if (!(memory = GET_PASS(MemoryModule))) {
 			/* TODO: We were unable to find a MemoryModule pass!
 			We cannot continue the execution of this pass */
-			printf("\n>> ERROR: Could not fetch the Memory Module Pass!\n\n");
+			DEBUG(DERROR, "Could not fetch the Memory Module Pass!");
 			success = PASS_RET_ERR;
 		}
 
 		return success;
 	}
 
-	enum PassRetcode finit() {
-		printf("- Terminating Pipeline\n");
+	enum PassRetcode finit()
+	{
+		DEBUG(DGOOD, "Terminating CPU");
 		return PASS_RET_OK;
 	}
 
-	enum PassRetcode run() {
-		printf("\n>>>> Pipeline is running! <<<<");
-		printf("\n- Memory contents:\n");
+	enum PassRetcode run()
+	{
+		DEBUG(DGOOD,">>>> CPU is running! <<<<");
+		DEBUG(DINFO, "Memory contents:");
 		
 		int8_t byte = 0;
 		uint32_t address = 0;
 		
-		while (byte != -1) {
+		while (byte != -1)
+		{
 			byte = (int8_t)memory->read(address, FISC_SZ_8, false);
-			printf("\t- Address: 0x%x Data: 0x%x (%c)\n", address, byte, (char)byte);
+			DEBUG(DNORMALH, "\n   > Address: 0x%x Data: 0x%x (%c)", address, byte, (char)byte);
 			address++;
 		}
 
@@ -60,7 +67,8 @@ public:
 		return PASS_RET_OK;
 	}
 
-	enum PassRetcode watchdog() {
+	enum PassRetcode watchdog()
+	{
 		return PASS_RET_OK;
 	}
 };
