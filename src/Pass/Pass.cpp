@@ -217,7 +217,7 @@ bool Pass::verifyPassID(Pass * passID, std::string resourceName)
 			strTolower(whitelistEntry.first) == strTolower(passID->passNameLong))
 		{
 			if(!whitelistEntry.second.size()) {
-				/* Before we declare victory, let's see if the resource is lcoked */
+				/* Before we declare victory, let's see if the resource is locked */
 				for (auto res : resourceList)
 					if (strTolower(res.name) == strTolower(resourceName) && res.locked)
 						return false; /* Oops, the Pass almost got it. Unfortunately, the resource is locked, even if the Pass has permission */
@@ -226,7 +226,7 @@ bool Pass::verifyPassID(Pass * passID, std::string resourceName)
 			} else {
 				for(std::string resName : whitelistEntry.second) {
 					if(strTolower(resName) == strTolower(resourceName)) {
-						/* Before we declare victory, let's see if the resource is lcoked */
+						/* Before we declare victory, let's see if the resource is locked */
 						for(auto res : resourceList)
 							if(strTolower(res.name) == strTolower(resourceName) && res.locked)
 								return false; /* Oops, the Pass almost got it. Unfortunately, the resource is locked, even if the Pass has permission */
@@ -238,6 +238,15 @@ bool Pass::verifyPassID(Pass * passID, std::string resourceName)
 	}
 	/* No can do */
 	return false;
+}
+
+bool Pass::DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag, std::string fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = debug::DEBUG(DEBUG_KIND_NULL, passName, true, type, override_flag, fmt, args);
+	va_end(args);
+	return success;
 }
 
 bool Pass::DEBUG(enum DEBUG_TYPE type, std::string fmt, ...)

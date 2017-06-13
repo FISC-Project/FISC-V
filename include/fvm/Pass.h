@@ -64,6 +64,7 @@ public:
 
 	bool changeDebugLevel(enum DEBUG_TYPE type, enum DEBUG_LEVEL newLevel);
 	bool changeDebugLevel(enum DEBUG_LEVEL newLevel);
+	bool DEBUG(enum DEBUG_KIND kind, enum DEBUG_TYPE type, bool override_flag, std::string fmt, ...);
 	bool DEBUG(enum DEBUG_TYPE type, std::string fmt, ...);
 	bool DEBUG(std::string fmt, ...);
 

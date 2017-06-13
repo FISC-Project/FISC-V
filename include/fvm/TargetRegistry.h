@@ -14,7 +14,7 @@ using namespace debug;
 #define SETOWNOBJNAME(prefix, objname) prefix ## objname.passName = STRING(objname); prefix ## objname.passNameLong = STRING(prefix ## objname);
 
 #define REGISTER_TARGET(Targetname, ...)\
-\
+namespace Targetname {\
 FOR_EACH_ARG(DECL_OBJ, Targetname, __VA_ARGS__)\
 \
 class Targetname ## Target : public TargetRegistry { \
@@ -25,12 +25,14 @@ public:\
 	~Targetname ## Target() {}\
 };\
 static Targetname ## Target The ## Targetname ## Target;\
+}\
 
 class Pass;
 
 class TargetRegistry {
 public:
 	static std::vector<TargetRegistry*> TheTargetList;
+	std::string targetName;
 
 	TargetRegistry(std::string targetName, std::vector<Pass*> passList);
 	~TargetRegistry();
@@ -45,7 +47,6 @@ public:
 
 private:
 	bool running;
-	std::string targetName;
 	std::vector<Pass*> passList;
 };
 

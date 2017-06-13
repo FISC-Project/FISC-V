@@ -1,25 +1,71 @@
+/*                                                                                                                                              
+                    
+                   __  __           _       _                                
+                  |  \/  |         | |     | |     _                         
+                  | \  / | ___   __| |_   _| | ___(_)                        
+                  | |\/| |/ _ \ / _` | | | | |/ _ \                          
+                  | |  | | (_) | (_| | |_| | |  __/_                         
+                  |_|  |_|\___/ \__,_|\__,_|_|\___(_)                        
+  _______                   _     _____       _ _   _       _ _              
+ |__   __|                 | |   |_   _|     (_| | (_)     | (_)             
+    | | __ _ _ __ __ _  ___| |_    | |  _ __  _| |_ _  __ _| |_ _______ _ __ 
+    | |/ _` | '__/ _` |/ _ | __|   | | | '_ \| | __| |/ _` | | |_  / _ | '__|
+    | | (_| | | | (_| |  __| |_   _| |_| | | | | |_| | (_| | | |/ |  __| |   
+    |_|\__,_|_|  \__, |\___|\__| |_____|_| |_|_|\__|_|\__,_|_|_/___\___|_|   
+                  __/ |                                                      
+                 |___/                                                       
+*/
+
+/*-----------------------------------------------------------------
+- FILE NAME: FISCInitFinit.cpp
+- MODULE NAME: Initializer and Unititializer
+- PURPOSE: To initialize and terminate the FISC target as a whole
+- AUTHOR: MIGUEL SANTOS
+------------------------------------------------------------------*/
+
+#pragma once
 #include <fvm/Pass.h>
 #include <stdio.h>
 
+namespace FISC {
+
 class InitFinit : public InitPass {
 public:
-	InitFinit() : InitPass(0) {}
+    InitFinit() : InitPass(0) {}
 
-	enum PassRetcode init() {
-		DEBUG(DGOOD, "Initializing FISC Target");
-		return PASS_RET_OK;
-	}
+    enum PassRetcode init() {
+        DEBUG(DGOOD, "Initializing FISC Target");
+        return PASS_RET_OK;
+    }
 
-	enum PassRetcode finit() {
-		DEBUG(DGOOD, "Terminating FISC Target");
-		return PASS_RET_OK;
-	}
+    enum PassRetcode finit() {
+        DEBUG(DGOOD, "Terminating FISC Target");
+        return PASS_RET_OK;
+    }
 
-	enum PassRetcode run() {
-		return PASS_RET_OK;
-	}
+    enum PassRetcode run() {
+        return PASS_RET_OK;
+    }
 
-	enum PassRetcode watchdog() {
-		return PASS_RET_OK;
-	}
+    enum PassRetcode watchdog() {
+        return PASS_RET_OK;
+    }
 };
+
+}
+/*
+      ______           _          __   __  __           _       _            
+     |  ____|         | |        / _| |  \/  |         | |     | |     _     
+     | |__   _ __   __| |   ___ | |_  | \  / | ___   __| |_   _| | ___(_)    
+     |  __| | '_ \ / _` |  / _ \|  _| | |\/| |/ _ \ / _` | | | | |/ _ \      
+     | |____| | | | (_| | | (_) | |   | |  | | (_) | (_| | |_| | |  __/_     
+     |______|_| |_|\__,_|  \___/|_|   |_|  |_|\___/ \__,_|\__,_|_|\___(_)    
+  _______                   _     _____       _ _   _       _ _              
+ |__   __|                 | |   |_   _|     (_| | (_)     | (_)             
+    | | __ _ _ __ __ _  ___| |_    | |  _ __  _| |_ _  __ _| |_ _______ _ __ 
+    | |/ _` | '__/ _` |/ _ | __|   | | | '_ \| | __| |/ _` | | |_  / _ | '__|
+    | | (_| | | | (_| |  __| |_   _| |_| | | | | |_| | (_| | | |/ |  __| |   
+    |_|\__,_|_|  \__, |\___|\__| |_____|_| |_|_|\__|_|\__,_|_|_/___\___|_|   
+                  __/ |                                                      
+                 |___/                                                       
+*/

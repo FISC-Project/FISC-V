@@ -1,12 +1,19 @@
-/*---------------------------------------------------------------
-                     __  __          ___                        |
-                |\/|/  \|  \|  ||   |__ .                       |
-                |  |\__/|__/\__/|___|___.                       |
-          ___     __  __            __  __          ___         |
-     |\/||__ |\/|/  \|__)\ /   |\/|/  \|  \|  ||   |__          |
-     |  ||___|  |\__/|  \ |    |  |\__/|__/\__/|___|___         |
-                                                                |
----------------------------------------------------------------*/
+/*                                                                                
+                  __  __           _       _                               
+                 |  \/  |         | |     | |     _                        
+                 | \  / | ___   __| |_   _| | ___(_)                       
+                 | |\/| |/ _ \ / _` | | | | |/ _ \                         
+                 | |  | | (_) | (_| | |_| | |  __/_                        
+                 |_|  |_|\___/ \__,_|\__,_|_|\___(_)                       
+  __  __                                   __  __           _       _      
+ |  \/  |                                 |  \/  |         | |     | |     
+ | \  / | ___ _ __ ___   ___  _ __ _   _  | \  / | ___   __| |_   _| | ___ 
+ | |\/| |/ _ | '_ ` _ \ / _ \| '__| | | | | |\/| |/ _ \ / _` | | | | |/ _ \
+ | |  | |  __| | | | | | (_) | |  | |_| | | |  | | (_) | (_| | |_| | |  __/
+ |_|  |_|\___|_| |_| |_|\___/|_|   \__, | |_|  |_|\___/ \__,_|\__,_|_|\___|
+                                    __/ |                                  
+                                   |___/                                   
+*/
 
 /*----------------------------------------------------
 - FILE NAME: FISCMemoryModule.cpp
@@ -22,7 +29,8 @@
 #include <fvm/TargetRegistry.h>
 #include "FISCMemoryConfigurator.cpp"
 #include "../CPU/ISA/FISCISA.h"
-#include <stdio.h>
+
+namespace FISC {
 
 class MemoryModule : public RunPass {
 #pragma region REGION 1: THE MEMORY CONFIGURATION DATA
@@ -155,7 +163,7 @@ public:
         enum PassRetcode success = PASS_RET_OK;
         /* Fetch Memory Configurator Pass */
         if (!(mconf = GET_PASS(MemoryConfigurator))) {
-            /* TODO: We were unable to find a MemoryConfigurator pass!
+            /* We were unable to find a MemoryConfigurator pass!
                We cannot continue the execution of this pass */
             DEBUG(DERROR, "Could not fetch the Memory Configurator Pass!");
             success = PASS_RET_ERR;
@@ -175,8 +183,9 @@ public:
                 }
             }
             mconf->programFile.close();
-            DEBUG(DINFO, "Loaded %d bytes into memory", (unsigned int)mconf->loadedProgramSize);
+            DEBUG(DINFO, "Loaded %d bytes / %d words into memory", (unsigned int)mconf->loadedProgramSize, (unsigned int)mconf->loadedProgramSize / 4);
         }
+
         return success;
     }
     
@@ -199,12 +208,20 @@ public:
     }
 #pragma endregion
 };
-/*---------------------------------------------------------------
-     ___     __     __  ___        __  __          ___          |
-    |__ |\ ||  \   /  \|__    |\/|/  \|  \|  ||   |__ .         |
-    |___| \||__/   \__/|      |  |\__/|__/\__/|___|___.         |
-          ___     __  __            __  __          ___         |
-     |\/||__ |\/|/  \|__)\ /   |\/|/  \|  \|  ||   |__          |
-     |  ||___|  |\__/|  \ |    |  |\__/|__/\__/|___|___         |
-                                                                |
-----------------------------------------------------------------*/
+}
+/*                                                                                 
+     ______           _          __   __  __           _       _           
+    |  ____|         | |        / _| |  \/  |         | |     | |     _    
+    | |__   _ __   __| |   ___ | |_  | \  / | ___   __| |_   _| | ___(_)   
+    |  __| | '_ \ / _` |  / _ \|  _| | |\/| |/ _ \ / _` | | | | |/ _ \     
+    | |____| | | | (_| | | (_) | |   | |  | | (_) | (_| | |_| | |  __/_    
+    |______|_| |_|\__,_|  \___/|_|   |_|  |_|\___/ \__,_|\__,_|_|\___(_)   
+  __  __                                   __  __           _       _      
+ |  \/  |                                 |  \/  |         | |     | |     
+ | \  / | ___ _ __ ___   ___  _ __ _   _  | \  / | ___   __| |_   _| | ___ 
+ | |\/| |/ _ | '_ ` _ \ / _ \| '__| | | | | |\/| |/ _ \ / _` | | | | |/ _ \
+ | |  | |  __| | | | | | (_) | |  | |_| | | |  | | (_) | (_| | |_| | |  __/
+ |_|  |_|\___|_| |_| |_|\___/|_|   \__, | |_|  |_|\___/ \__,_|\__,_|_|\___|
+                                    __/ |                                  
+                                   |___/                                   
+*/

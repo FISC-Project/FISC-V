@@ -28,9 +28,9 @@
 #include "Memory/FISCMemoryConfigurator.cpp"
 #include "Memory/FISCMemoryModule.cpp"
 
-/*****************/
-/* FISC PIPELINE */
-/*****************/
+/************/
+/* FISC CPU */
+/************/
 #include "CPU/FISCCPUConfigurator.cpp"
 #include "CPU/FISCCPUModule.cpp"
 

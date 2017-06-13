@@ -233,10 +233,17 @@ bool DEBUG(enum DEBUG_KIND kind, std::string kindName, bool kindByName, enum DEB
 	}
 
 	if (!override_flag && type != DNORMALH) {
-		sprintf(debugBuffHeader, "%s (@%s, %s)",
+		if(debugTypeEntry->level != DNONE) {
+			sprintf(debugBuffHeader, "%s (@%s, %s)",
+					debugTypeEntry->typeName.c_str(),
+					debugTypeEntry->kindName.c_str(),
+					debugTypeEntry->levelName.c_str());
+		} else {
+			sprintf(debugBuffHeader, "%s (@%s)",
 				debugTypeEntry->typeName.c_str(),
-				debugTypeEntry->kindName.c_str(),
-				debugTypeEntry->levelName.c_str());
+				debugTypeEntry->kindName.c_str());
+		}
+		
 		if(firstLine) {
 			raw_print("> ", nullptr, false);
 			firstLine = false;
