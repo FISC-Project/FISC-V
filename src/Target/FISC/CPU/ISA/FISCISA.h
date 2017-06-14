@@ -89,6 +89,23 @@ typedef struct ifmt_iw {
 
 #define INSTR_TO_IFMT_IW(instruction) ((ifmt_iw_t*)&instruction)
 
+enum CONDITION_CODES {
+	BEQ, /* Branch if equal (==)                 */
+	BNE, /* Branch if not equal (!=)             */
+	BLT, /* Branch if less than (<)              */
+	BLE, /* Branch if less or equal than <==)    */
+	BGT, /* Branch if greater than (>)           */
+	BGE, /* Branch if greater or equal than (>=) */
+	BLO, /* Branch if lower than (< signed)      */
+	BLS, /* Branch if lower or same (<= signed)  */
+	BHI, /* Branch if higher (> signed)          */
+	BHS, /* Branch if higher or same (>= signed) */
+	BMI, /* Branch if minus (-)                  */
+	BPL, /* Branch if plus (+)                   */
+	BVS, /* Branch on overflow set               */
+	BVC  /* Branch on overflow clear             */
+};
+
 enum OPCODE {
 	/* ARITHMETIC AND LOGIC */
 	ADD   = 0x458, ADDI  = 0x488, ADDIS = 0x588, ADDS = 0x558,
@@ -127,7 +144,7 @@ enum OPCODE {
 	LIVP  = 0x5D4, SIVP  = 0x5B4,
 	LEVP  = 0x594, SEVP  = 0x574,
 	SESR  = 0x554,
-	SINT  = 0x520, RETI  = 0x500,
+	SINT  = 0x520, RETI  = 0x580,
 	/* VIRTUAL MEMORY */
 	LPDP  = 0x4F4, SPDP  = 0x4D4,
 	LPFLA = 0x4B4
@@ -144,7 +161,7 @@ enum OPCODE {
 #define XZR 31 /* Zero register      */
 
 enum SPECIAL_REGISTERS {
-	SPECIAL_PC = 33, /* Program Counter                   */
+	SPECIAL_PC = 32, /* Program Counter                   */
 	SPECIAL_ESR,     /* Exception Syndrome Register       */
 	SPECIAL_ELR,     /* Exception Link / Return Register  */
 	SPECIAL_CPSR,    /* Current Processor Status Register */
@@ -201,6 +218,7 @@ class Instruction;
 
 extern Instruction ** instruction_list_realloc;
 extern unsigned int instruction_list_size;
+extern bool instruction_list_success_declared;
 
 class CPUModule;
 
@@ -260,9 +278,25 @@ public:
 				break;
 		}
 
-		instruction_list_size++;
-		instruction_list_realloc = (Instruction**)realloc(instruction_list_realloc, instruction_list_size * sizeof(Instruction*));
-		instruction_list_realloc[instruction_list_size - 1] = this;
+		for (unsigned int i = 0; i < instruction_list_size; i++) {
+			if (instruction_list_realloc[i]->opcodeShifted == this->opcodeShifted)
+			{
+				/* Oh no, there is a conflict between instructions */
+				PRINTC(DERROR, "FATAL ERROR: The instruction %s (opcode 0x%X) is in conflict with instruction %s (opcode 0x%X)", 
+					this->opcodeStr.c_str(), this->opcode,
+					instruction_list_realloc[i]->opcodeStr.c_str(), instruction_list_realloc[i]->opcode);
+				free(instruction_list_realloc);
+				instruction_list_realloc = nullptr;
+				instruction_list_size = 0;
+				instruction_list_success_declared = false; /* Prevent all the other instructions from being initialized */
+			}
+		}
+
+		if(instruction_list_success_declared) {
+			instruction_list_size++;
+			instruction_list_realloc = (Instruction**)realloc(instruction_list_realloc, instruction_list_size * sizeof(Instruction*));
+			instruction_list_realloc[instruction_list_size - 1] = this;
+		}
 	}
 
 	uint32_t instruction;

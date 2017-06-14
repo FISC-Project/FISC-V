@@ -31,6 +31,7 @@ private:
 	Instruction * decode(uint32_t instruction);
 	std::string disassembleConstant(unsigned val);
 	std::string disassembleRegister(unsigned registerIndex);
+	std::string CPUModule::disassembleBCC(unsigned cc);
 	std::string disassemble(Instruction * instruction);
 	std::string getCurrentCPUModeStr();
 

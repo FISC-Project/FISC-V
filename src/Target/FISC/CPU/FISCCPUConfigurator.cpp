@@ -31,6 +31,7 @@ namespace FISC {
 
 static Instruction ** instruction_list_realloc = nullptr;
 static unsigned int instruction_list_size = 0;
+static bool instruction_list_success_declared = true;
 
 class CPUConfigurator : public ConfigPass {
 private:
@@ -79,7 +80,7 @@ public:
             }
 
             if (success == PASS_RET_OK) {
-                DEBUG(DGOOD, "Instruction count: %d", instruction_list_size);
+                DEBUG(DGOOD, "CPU supports %d unique instructions", instruction_list_size);
 
                 /* Clear flags */
                 cpsr.n = cpsr.z = cpsr.v = cpsr.c = 0;

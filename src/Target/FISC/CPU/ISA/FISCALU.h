@@ -1,7 +1,6 @@
 #ifndef FISC_ALU_H_
 #define FISC_ALU_H_
 
-#include <fvm/Utils/String.h>
 #include "../FISCCPUModule.h"
 #include "FISCISA.h"
 

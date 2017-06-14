@@ -229,15 +229,42 @@ std::string CPUModule::disassembleRegister(unsigned registerIndex)
         return "XNIL";
 }
 
+std::string CPUModule::disassembleBCC(unsigned cc)
+{
+    switch (cc) {
+    case BEQ: return "BEQ";
+    case BNE: return "BNE";
+    case BLT: return "BLT";
+    case BLE: return "BLE";
+    case BGT: return "BGT";
+    case BGE: return "BGE";
+    case BLO: return "BLO";
+    case BLS: return "BLS";
+    case BHI: return "BHI";
+    case BHS: return "BHS";
+    case BMI: return "BMI";
+    case BPL: return "BPL";
+    case BVS: return "BVS";
+    case BVC: return "BVC";
+    default: return "<NIL>";
+    }
+}
+
 std::string CPUModule::disassemble(Instruction * instruction)
 {
+    if(instruction->opcodeStr == "BCOND")
+        instruction->opcodeStr = disassembleBCC(instruction->ifmt_cb->rt);
+
     std::string stringBuild = instruction->opcodeStr + " ";
     switch (instruction->format) {
         case IFMT_R:
-            if(instruction->ifmt_r->rd == XZR && instruction->ifmt_r->rn == XZR && instruction->ifmt_r->rm == XZR)
+            if(instruction->ifmt_r->rd == XZR && instruction->ifmt_r->rn == XZR && instruction->ifmt_r->rm == XZR) {
                 stringBuild = "NOP";
-            else
-                stringBuild += disassembleRegister(instruction->ifmt_r->rd) + ", X" + disassembleRegister(instruction->ifmt_r->rn) + ", X" + disassembleRegister(instruction->ifmt_r->rm);
+            } else {
+                stringBuild += disassembleRegister(instruction->ifmt_r->rd);
+                if(instruction->opcode != BR)
+                    stringBuild += ", " + disassembleRegister(instruction->ifmt_r->rn) + ", " + disassembleRegister(instruction->ifmt_r->rm);
+            }
             break;
         case IFMT_I:
             stringBuild += disassembleRegister(instruction->ifmt_i->rd) + ", " + disassembleRegister(instruction->ifmt_i->rn) + ", " + disassembleConstant(instruction->ifmt_i->alu_immediate);
@@ -320,7 +347,7 @@ enum PassRetcode CPUModule::finit()
 enum PassRetcode CPUModule::run()
 {
     DEBUG(DGOOD,"EXECUTING (mode: %s)...\n", getCurrentCPUModeStr().c_str());
-        
+    
     /* 
     -- CPU ALGORITHM --
         1-Fetch
@@ -395,6 +422,24 @@ enum PassRetcode CPUModule::run()
 
     DEBUG(DNORMALH, "\n");
     DEBUG(DGOOD, "DONE EXECUTING (%d instructions executed)", instructionsExecuted - 1);
+
+    if (cmdHasOpt("dump")) {
+        std::string dumpWhat = cmdQuery("dump").second;
+        if (dumpWhat == NULLSTR) {
+            DEBUG(DWARN, "--debug flag with no argument. Possible options: reg | mem <addr | addr interval> | all");
+        } else {
+            if (strTolower(dumpWhat) == "reg") {
+                /* Dump all registers */
+                DEBUG(DNORMALH, "\n");
+                DEBUG(DINFO2, "Dumping all register contents");
+                for (uint16_t i = 0; i < FISC_TOTAL_REGISTER_COUNT; i++)
+                    DEBUG(DINFO, "%s\t= 0x%X", disassembleRegister(i).c_str(), readRegister(i));
+                DEBUG(DINFO2, "Dump completed");
+                DEBUG(DNORMALH, "\n");
+            }
+        }
+    }
+
     return PASS_RET_OK;
 }
 

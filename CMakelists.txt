@@ -13,68 +13,68 @@ include_directories(include src)
 
 add_subdirectory(src)
 
-add_executable(${PROJECT_NAME} src/FVM.cpp)
+add_executable(fvm src/FVM.cpp)
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT fvm)
 
-target_link_libraries(${PROJECT_NAME}
-	########## VM Infrastructure ##########
-	FVMDebug 
-	FVMAPILinux 
-	FVMAPIWindows 
-	FVMGenDebug
-	FVMPass
-	FVMRegistry
-	FVMRuntime
+target_link_libraries(fvm
+    ########## VM Infrastructure ##########
+    FVMDebug 
+    FVMAPILinux 
+    FVMAPIWindows 
+    FVMGenDebug
+    FVMPass
+    FVMRegistry
+    FVMRuntime
 
-	########## Support Libraries ##########
-	FVMUtils
+    ########## Support Libraries ##########
+    FVMUtils
 )
 
-set_property( GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set_target_properties(
-	########## VM Infrastructure folder ##########
-	FVMDebug 
-	FVMAPILinux 
-	FVMAPIWindows 
-	FVMGenDebug
-	FVMPass
-	FVMRegistry
-	FVMRuntime
+    ########## VM Infrastructure folder ##########
+    FVMDebug 
+    FVMAPILinux 
+    FVMAPIWindows 
+    FVMGenDebug
+    FVMPass
+    FVMRegistry
+    FVMRuntime
 
-	PROPERTIES FOLDER "VM Infrastructure"
+    PROPERTIES FOLDER "VM Infrastructure"
 )
 
 set_target_properties(
-	########## Support Libraries folder ##########
-	FVMUtils
+    ########## Support Libraries folder ##########
+    FVMUtils
 
-	PROPERTIES FOLDER "Support Libraries"
+    PROPERTIES FOLDER "Support Libraries"
 )
 
 #########################################################################
 ############################ TARGET SPECIFIC ############################
 #########################################################################
 
-target_link_libraries(${PROJECT_NAME}
-	########## Machine Targets (!! add your target here !!) ##########
-	FVMFISCPassError
-	FVMFISCPassInitFinit
-	FVMFISCPassIO
-	FVMFISCPassMemory
-	FVMFISCPassCPU
+target_link_libraries(fvm
+    ########## Machine Targets (!! add your target here !!) ##########
+    FVMFISCPassError
+    FVMFISCPassInitFinit
+    FVMFISCPassIO
+    FVMFISCPassMemory
+    FVMFISCPassCPU
 )
 
 set_target_properties(
-	########## Machine Targets folder (!! add your target here !!) ##########
-	FVMFISCPassError
-	FVMFISCPassInitFinit
-	FVMFISCPassIO
-	FVMFISCPassMemory
-	FVMFISCPassCPU
+    ########## Machine Targets folder (!! add your target here !!) ##########
+    FVMFISCPassError
+    FVMFISCPassInitFinit
+    FVMFISCPassIO
+    FVMFISCPassMemory
+    FVMFISCPassCPU
 
-	PROPERTIES FOLDER "Machine Targets"
+    PROPERTIES FOLDER "Machine Targets"
 )
 
 #########################################################################
