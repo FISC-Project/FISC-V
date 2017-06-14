@@ -292,3 +292,5 @@ public:
 
 }
 #endif
+
+using namespace FISC;
