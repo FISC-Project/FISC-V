@@ -25,6 +25,13 @@ public:
 
 	enum FISC_RETTYPE branch(uint32_t new_addr, bool isPCRel);
 
+	uint64_t mmu_read(uint32_t address,
+	                  enum FISC_DATATYPE dataType, bool forceAlign,
+					  bool debug);
+	enum FISC_RETTYPE mmu_write(uint64_t data, uint32_t address, 
+	                            enum FISC_DATATYPE dataType, bool forceAlign,
+								bool debug);
+
 private:
 	bool detectOverflow(uint64_t operand1, uint64_t operand2, char operation);
 	bool detectCarry(uint64_t operand1, uint64_t operand2, char operation);

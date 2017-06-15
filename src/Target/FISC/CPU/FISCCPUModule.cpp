@@ -113,6 +113,38 @@ enum FISC_RETTYPE CPUModule::branch(uint32_t new_addr, bool isPCRel)
     return success;
 }
 
+uint64_t CPUModule::mmu_read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
+{
+    if (cconf->cpsr.pg) {
+        /* Paging is enabled. We must access the memory using the value inside register
+           PDP, which contains a pointer to a page directory.
+           Using this virtual address, we can access the page directory to look for the
+           real physical memory address. Only then we can really access the memory module */
+        /* TODO */
+        return -1;
+    }
+    else {
+        /* Paging is disabled */
+        return memory->read(address, dataType, forceAlign, debug);
+    }
+}
+
+enum FISC_RETTYPE CPUModule::mmu_write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
+{
+    if (cconf->cpsr.pg) {
+        /* Paging is enabled. We must access the memory using the value inside register
+           PDP, which contains a pointer to a page directory.
+           Using this virtual address, we can access the page directory to look for the
+           real physical memory address. Only then we can really access the memory module */
+        /* TODO */
+        return FISC_RET_OK;
+    }
+    else {
+        /* Paging is disabled */
+        return memory->write(data, address, dataType, forceAlign, debug) ? FISC_RET_OK : FISC_RET_ERROR;
+    }
+}
+
 bool CPUModule::detectOverflow(uint64_t operand1, uint64_t operand2, char operation)
 {
     switch (operation) {
@@ -363,9 +395,9 @@ enum PassRetcode CPUModule::run()
     uint32_t instructionsExecuted = 1;
     uint32_t instruction = (uint32_t)-1;
     uint32_t pc_copy = (uint32_t)-1;
-
+    
     /* On every loop: 1 - Fetch instruction */
-    while ((instruction = (uint32_t)memory->read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false)) != (uint32_t)-1)
+    while ((instruction = (uint32_t)mmu_read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false, false)) != (uint32_t)-1)
     {
         /* 2 - Decode instruction */
         Instruction * decodedInstruction = decode(instruction);
@@ -432,8 +464,12 @@ enum PassRetcode CPUModule::run()
                 /* Dump all registers */
                 DEBUG(DNORMALH, "\n");
                 DEBUG(DINFO2, "Dumping all register contents");
-                for (uint16_t i = 0; i < FISC_TOTAL_REGISTER_COUNT; i++)
-                    DEBUG(DINFO, "%s\t= 0x%X", disassembleRegister(i).c_str(), readRegister(i));
+                for (uint16_t i = 0; i < FISC_TOTAL_REGISTER_COUNT; i++) {
+                    if(i == SPECIAL_PC || i == SPECIAL_ESR || (i >= SPECIAL_CPSR && i <= SPECIAL_SPSR5))
+                        DEBUG(DINFO, "%s\t= 0x%X", disassembleRegister(i).c_str(), readRegister(i));
+                    else
+                        DEBUG(DINFO, "%s\t= 0x%I64X", disassembleRegister(i).c_str(), readRegister(i));
+                }
                 DEBUG(DINFO2, "Dump completed");
                 DEBUG(DNORMALH, "\n");
             }

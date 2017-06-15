@@ -50,79 +50,104 @@ private:
 
 #pragma region REGION 3: THE MEMORY BEHAVIOUR (IMPL. SPECIFIC)
 public:
-    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool align)
+    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
     {
         /* Align (or not) the address */
-        if(align)
+        if(forceAlign)
             alignAddress(address, dataType);
+
+        if(debug)
+            DEBUG(DNORMALH, " (mrd @0x%X/%s al=%d", address, 
+                dataType == FISC_SZ_8 ? "8bit" : dataType == FISC_SZ_16 ? "16bit" : dataType == FISC_SZ_32 ? "32bit" : dataType == FISC_SZ_64 ? "64bit" : "INVAL", 
+                forceAlign);
 
         /* Check if address is valid */
         if(!isAddressValid(address, dataType))
             return (uint64_t)-1;
 
         /* Fetch the memory */
+        uint64_t memVal = (uint64_t)-1;
         switch (dataType) {
         case FISC_SZ_8:
-            return mconf->theMemory[address].to_ulong();
+            memVal = mconf->theMemory[address].to_ulong();
+            break;
         case FISC_SZ_16:
-            return (mconf->theMemory[address].to_ulong() << 8) |
-                mconf->theMemory[address + 1].to_ulong();
+            memVal = (mconf->theMemory[address].to_ulong() << 8) |
+                      mconf->theMemory[address + 1].to_ulong();
+            break;
         case FISC_SZ_32:
-            return  (mconf->theMemory[address].to_ulong() << 24) |
-                (mconf->theMemory[address + 1].to_ulong() << 16) |
-                (mconf->theMemory[address + 2].to_ulong() << 8) |
-                mconf->theMemory[address + 3].to_ulong();
+            memVal = (mconf->theMemory[address].to_ulong()     << 24) |
+                     (mconf->theMemory[address + 1].to_ulong() << 16) |
+                     (mconf->theMemory[address + 2].to_ulong() << 8)  |
+                      mconf->theMemory[address + 3].to_ulong();
+            break;
         case FISC_SZ_64:
-            return ((uint64_t)(mconf->theMemory[address].to_ulong()) << 56) |
-                ((uint64_t)mconf->theMemory[address + 1].to_ulong() << 48) |
-                ((uint64_t)mconf->theMemory[address + 2].to_ulong() << 40) |
-                ((uint64_t)mconf->theMemory[address + 3].to_ulong() << 32) |
-                ((uint64_t)mconf->theMemory[address + 4].to_ulong() << 24) |
-                ((uint64_t)mconf->theMemory[address + 5].to_ulong() << 16) |
-                ((uint64_t)mconf->theMemory[address + 6].to_ulong() << 8) |
-                (uint64_t)mconf->theMemory[address + 7].to_ulong();
-        default: return (uint64_t)-1;
+            memVal = ((uint64_t)(mconf->theMemory[address].to_ulong())    << 56) |
+                     ((uint64_t) mconf->theMemory[address + 1].to_ulong() << 48) |
+                     ((uint64_t) mconf->theMemory[address + 2].to_ulong() << 40) |
+                     ((uint64_t) mconf->theMemory[address + 3].to_ulong() << 32) |
+                     ((uint64_t) mconf->theMemory[address + 4].to_ulong() << 24) |
+                     ((uint64_t) mconf->theMemory[address + 5].to_ulong() << 16) |
+                     ((uint64_t) mconf->theMemory[address + 6].to_ulong() << 8)  |
+                      (uint64_t) mconf->theMemory[address + 7].to_ulong();
+            break;
+        default: /* Invalid data width */ 
+            if(debug)
+                DEBUG(DNORMALH, " INVAL SZ)");
+            return memVal;
         }
-        return (uint64_t)-1;
+        if (debug)
+            DEBUG(DNORMALH, ": 0x%X)", memVal);
+        return memVal;
     }
 
-    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool align)
+    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
     {
         /* Align (or not) the address */
-        if (align)
+        if (forceAlign)
             alignAddress(address, dataType);
+
+        if(debug)
+            DEBUG(DNORMALH, " (mwr @0x%X/%s al=%d", address,
+                dataType == FISC_SZ_8 ? "8bit" : dataType == FISC_SZ_16 ? "16bit" : dataType == FISC_SZ_32 ? "32bit" : dataType == FISC_SZ_64 ? "64bit" : "INVAL",
+                forceAlign);
 
         /* Check if address is valid */
         if(!isAddressValid(address, dataType))
             return false;
-
+        
         /* Write to memory */
         switch (dataType) {
         case FISC_SZ_8:
             mconf->theMemory[address] = (uint8_t)data;
             break;
         case FISC_SZ_16:
-            mconf->theMemory[address] = (uint8_t)((data & 0xFF00) >> 8);
+            mconf->theMemory[address]     = (uint8_t)((data & 0xFF00) >> 8);
             mconf->theMemory[address + 1] = (uint8_t)data & 0xFF;
             break;
         case FISC_SZ_32:
-            mconf->theMemory[address] = (uint8_t)((data & 0xFF000000) >> 24);
+            mconf->theMemory[address]     = (uint8_t)((data & 0xFF000000) >> 24);
             mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF0000) >> 16);
             mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF00) >> 8);
-            mconf->theMemory[address + 3] = (uint8_t)data & 0xFF;
+            mconf->theMemory[address + 3] = (uint8_t)  data & 0xFF;
             break;
         case FISC_SZ_64:
-            mconf->theMemory[address] = (uint8_t)((data & 0xFF00000000000000) >> 56);
+            mconf->theMemory[address]     = (uint8_t)((data & 0xFF00000000000000) >> 56);
             mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF000000000000) >> 48);
             mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF0000000000) >> 40);
             mconf->theMemory[address + 3] = (uint8_t)((data & 0xFF00000000) >> 32);
             mconf->theMemory[address + 4] = (uint8_t)((data & 0xFF000000) >> 24);
             mconf->theMemory[address + 5] = (uint8_t)((data & 0xFF0000) >> 16);
             mconf->theMemory[address + 6] = (uint8_t)((data & 0xFF00) >> 8);
-            mconf->theMemory[address + 7] = (uint8_t)data & 0xFF;
+            mconf->theMemory[address + 7] = (uint8_t)  data & 0xFF;
             break;
-        default: return false;
+        default: /* Invalid data width */ 
+            if (debug)
+                DEBUG(DNORMALH, " INVAL SZ)");
+            return false;
         }
+        if (debug)
+            DEBUG(DNORMALH, ": 0x%X)", data);
         return true;
     }
 

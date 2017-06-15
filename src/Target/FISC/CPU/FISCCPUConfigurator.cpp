@@ -35,6 +35,9 @@ static bool instruction_list_success_declared = true;
 
 class CPUConfigurator : public ConfigPass {
 private:
+    #define DEFAULT_ALIGN_BASE   (0) /* Base   address alignment is disabled by default */
+    #define DEFAULT_ALIGN_OFFSET (0) /* Offset address alignment is disabled by default */
+
     /* List of permissions for external Passes that want to use the resources of this Pass */
     #define WHITELIST_CPU_CONF {DECL_WHITELIST_ALL(CPUModule)}
 
@@ -85,8 +88,8 @@ public:
                 /* Clear flags */
                 cpsr.n = cpsr.z = cpsr.v = cpsr.c = 0;
 
-                /* Alignment is disabled by default */
-                cpsr.ae = 0;
+                /* Set the two base and offset alignment bits */
+                cpsr.ae = (DEFAULT_ALIGN_OFFSET << 1) | DEFAULT_ALIGN_BASE;
 
                 /* Paging is disabled by default */
                 cpsr.pg = 0;
@@ -97,6 +100,11 @@ public:
                 /* Set default CPU execution mode */
                 cpsr.mode = FISC_DEFAULT_EXEC_MODE;
 
+                /* Clear all SPSR registers */
+                for(unsigned i = 0; i < 6; i++)
+                    spsr[i].ae = spsr[i].c = spsr[i].ien = spsr[i].mode = 
+                        spsr[i].n = spsr[i].pg = spsr[i].v = spsr[i].z = 0;
+                
                 /* Save the CPSR register to the SPSR of the current CPU mode */
                 spsr[cpsr.mode] = cpsr;
 

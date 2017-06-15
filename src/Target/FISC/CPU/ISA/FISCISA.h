@@ -178,7 +178,7 @@ typedef struct {
 	unsigned mode : 3; /* CPU Execution Mode:    UND.    | User | Kernel | IRQ | SIRQ | EXCEPTION (0b111) */
 	unsigned ien  : 2; /* Interrupt Enable Mask: Disable | Enable */
 	unsigned pg   : 1; /* Paging:                Disable | Enable */
-	unsigned ae   : 1; /* Alignment:             Disable | Enable */
+	unsigned ae   : 2; /* Alignment:             Disable | Enable */
 	unsigned c    : 1; /* Carry    flag */
 	unsigned v    : 1; /* Overflow flag */
 	unsigned z    : 1; /* Zero     flag */
@@ -300,10 +300,10 @@ public:
 	}
 
 	uint32_t instruction;
-	ifmt_r_t * ifmt_r;
-	ifmt_i_t * ifmt_i;
-	ifmt_d_t * ifmt_d;
-	ifmt_b_t * ifmt_b;
+	ifmt_r_t  * ifmt_r;
+	ifmt_i_t  * ifmt_i;
+	ifmt_d_t  * ifmt_d;
+	ifmt_b_t  * ifmt_b;
 	ifmt_cb_t * ifmt_cb;
 	ifmt_iw_t * ifmt_iw;
 	enum OPCODE opcode;
@@ -323,6 +323,9 @@ public:
 #define NEW_INSTRUCTION(targetname, mnemonic, format, operation) static Instruction targetname ## _instruction_ ## mnemonic(mnemonic, STRING(mnemonic), format, [] (Instruction * _this_, CPUModule * _cpu_) operation)
 
 #define RETURN(type, msg) do{ _this_->retStr = msg; return type; } while(0);
+
+#define ALIGN_BASE(base, op) (op == 0 ? base : op == 1 ? ALIGN16(base) : op == 2 ? ALIGN32(base) : op == 3 ? ALIGN64(base) : -1)
+#define ALIGN_DTADDR(dtaddr, op) (op == 0 ? dtaddr : op == 1 ? ALIGN16(dtaddr) : op == 2 ? ALIGN32(dtaddr) : op == 3 ? ALIGN64(dtaddr) : -1)
 
 }
 #endif
