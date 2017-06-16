@@ -50,16 +50,16 @@ private:
 
 #pragma region REGION 3: THE MEMORY BEHAVIOUR (IMPL. SPECIFIC)
 public:
-    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
+    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isMMUOn, bool debug)
     {
         /* Align (or not) the address */
         if(forceAlign)
             alignAddress(address, dataType);
 
         if(debug)
-            DEBUG(DNORMALH, " (mrd @0x%X/%s al=%d", address, 
+            DEBUG(DNORMALH, " (mrd @0x%X/%s al=%d vm=%d", address, 
                 dataType == FISC_SZ_8 ? "8bit" : dataType == FISC_SZ_16 ? "16bit" : dataType == FISC_SZ_32 ? "32bit" : dataType == FISC_SZ_64 ? "64bit" : "INVAL", 
-                forceAlign);
+                forceAlign, isMMUOn);
 
         /* Check if address is valid */
         if(!isAddressValid(address, dataType))
@@ -101,16 +101,16 @@ public:
         return memVal;
     }
 
-    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
+    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isMMUOn, bool debug)
     {
         /* Align (or not) the address */
         if (forceAlign)
             alignAddress(address, dataType);
 
         if(debug)
-            DEBUG(DNORMALH, " (mwr @0x%X/%s al=%d", address,
+            DEBUG(DNORMALH, " (mwr @0x%X/%s al=%d vm=%d", address,
                 dataType == FISC_SZ_8 ? "8bit" : dataType == FISC_SZ_16 ? "16bit" : dataType == FISC_SZ_32 ? "32bit" : dataType == FISC_SZ_64 ? "64bit" : "INVAL",
-                forceAlign);
+                forceAlign, isMMUOn);
 
         /* Check if address is valid */
         if(!isAddressValid(address, dataType))
@@ -222,7 +222,7 @@ public:
 
     enum PassRetcode run()
     {
-        /* TODO: For now we don't want to keep anything running on this thread.
+        /* For now we don't want to keep anything running on this thread.
            We're keeping it relatively simple (for now!!) */
         return PASS_RET_OK;
     }

@@ -39,9 +39,7 @@ bool TargetRegistry::run()
 		
 		/* While we're at it, set the parent target context
 		   so that the passes can access each other */
-		if (!pass->setParentTargetContext(this)) {
-			/* TODO: Oops, we're not allowed to do this? Handle this error */
-		}
+		pass->setParentTargetContext(this);
 	}
 
 	/* Sort each category by priority */

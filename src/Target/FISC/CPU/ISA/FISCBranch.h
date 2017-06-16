@@ -36,7 +36,7 @@ NEW_INSTRUCTION(FISC, BR, RF, /* Operation: PC = R[Rt] */
 NEW_INSTRUCTION(FISC, BCOND, CBF, /* Operation: if(FLAGS == cond) PC += CondBranchAddr */
 {
 	int64_t addr = _this_->ifmt_cb->cond_br_address;
-	if (addr & (1 << (19 - 1))) addr = -((~addr + 1) & 0x7FFFF); /* Fix non 64-bit number signedness */
+	if(addr & (1 << (19 - 1))) addr = -((~addr + 1) & 0x7FFFF); /* Fix non 64-bit number signedness */
 
 	uint64_t cpsrVal = _cpu_->readRegister(SPECIAL_CPSR);
 	cpsr_t cpsr = *(cpsr_t*)&cpsrVal;

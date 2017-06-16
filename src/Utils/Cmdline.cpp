@@ -42,32 +42,65 @@ void cmdPush(string opt, string arg)
 	opts_list.push_back(make_pair(getStringOpt(opt), arg));
 }
 
-std::pair<char, string> cmdQuery(char optQuery)
+
+std::pair<char, string> cmdQuery(char optQuery, unsigned nth)
 {
 	for (auto pair : opts_single_list)
-		if (pair.first == optQuery) return pair;
+		if (pair.first == optQuery) {
+			if(nth--) continue;
+			else return pair;
+		}
 	return make_pair(0, NULLSTR);
+}
+
+std::pair<char, string> cmdQuery(char optQuery)
+{
+	return cmdQuery(optQuery, 0);
+}
+
+std::pair<string, string> cmdQuery(string optQuery, unsigned nth)
+{
+	for (auto pair : opts_list)
+		if (pair.first == optQuery) {
+			if (nth--) continue;
+			else return pair;
+		}
+	return make_pair(NULLSTR, NULLSTR);
 }
 
 std::pair<string, string> cmdQuery(string optQuery)
 {
+	return cmdQuery(optQuery, 0);
+}
+
+bool cmdHasOpt(std::string opt, unsigned nth)
+{
 	for (auto pair : opts_list)
-		if (pair.first == optQuery) return pair;
-	return make_pair(NULLSTR, NULLSTR);
+		if (pair.first == opt) {
+			if (nth--) continue;
+			else return true;
+		}
+	return false;
+}
+
+bool cmdHasOpt(char opt, unsigned nth)
+{
+	for (auto pair : opts_single_list)
+		if (pair.first == opt) {
+			if (nth--) continue;
+			else return true;
+		}
+	return false;
 }
 
 bool cmdHasOpt(char opt)
 {
-	for (auto pair : opts_single_list)
-		if (pair.first == opt) return true;
-	return false;
+	return cmdHasOpt(opt, 0);
 }
 
 bool cmdHasOpt(string opt)
 {
-	for (auto pair : opts_list)
-		if (pair.first == opt) return true;
-	return false;
+	return cmdHasOpt(opt, 0);
 }
 
 unsigned cmdGetOptCount(void)

@@ -115,14 +115,14 @@ public:
             }
         }
 
-        if (success == PASS_RET_ERR) {
-            /* TODO: If the variable success is equal to PASS_RET_ERR,
-            we must tell the top layer (VM) that this module
-            will not be able to continue, thus forcing every other
-            single module (on this target only) to cancel its current
-            operations. */
+        /* If the variable success is equal to PASS_RET_ERR,
+           we must tell the top layer (VM) that this module
+           will not be able to continue, thus forcing every other
+           single module (on this target only) to cancel its current
+           operations. */
+
+        if (success == PASS_RET_ERR)
             DEBUG(DERROR, "Could not initialize the Memory Configurator Pass!");
-        }
 
         return success;
     }

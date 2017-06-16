@@ -5,6 +5,7 @@
 #include <functional>
 #include <stdint.h>
 #include <stdarg.h>
+#include <fvm/Utils/Bit.h>
 
 namespace FISC {
 
@@ -12,11 +13,15 @@ namespace FISC {
 /* FISC Instruction Set Declaration */
 /************************************/
 
-#define FISC_INSTRUCTION_SZ         32 /* How wide is the instruction (in bits, not bytes) */
-#define FISC_REGISTER_COUNT         32 /* How many registers will we use                   */
-#define FISC_SPECIAL_REGISTER_COUNT 14 /* How many special registers will we use           */
-#define FISC_TOTAL_REGISTER_COUNT (FISC_REGISTER_COUNT + FISC_SPECIAL_REGISTER_COUNT) /* How many registers in total */
-#define FISC_DEFAULT_EXEC_MODE FISC_CPU_MODE_KERNEL /* The default mode of execution of the CPU */
+#define FISC_INSTRUCTION_SZ         32 /* How wide is the instruction (in bits, not bytes)                                  */
+#define FISC_REGISTER_COUNT         32 /* How many registers will we use                                                    */
+#define FISC_SPECIAL_REGISTER_COUNT 14 /* How many special registers will we use                                            */
+#define FISC_TOTAL_REGISTER_COUNT (FISC_REGISTER_COUNT + FISC_SPECIAL_REGISTER_COUNT) /* How many registers in total        */
+#define FISC_DEFAULT_EXEC_MODE FISC_CPU_MODE_KERNEL /* The default mode of execution of the CPU                             */
+#define FISC_PAGES_PER_TABLE   1024   /* How many pages are present on an MMU's Table entry                                 */
+#define FISC_TABLES_PER_DIR    1024   /* How many tables can a Page directory hold                                          */
+#define FISC_PAGE_SIZE         0x1000 /* How large of a block each Page entry can represent                                 */
+#define FISC_USER_SYSCALL_CODE 0xFFF  /* The interrupt number the user must use when executing system calls (or interrupts) */
 
 enum INSTRUCTION_FMT {
 	IFMT_R,  /* Register-Register     Format */
@@ -210,8 +215,76 @@ enum FISC_RETTYPE {
 	FISC_RET_INFO,    /* Used to indicate successful instruction execution included with a useful message */
 	FISC_RET_WARNING, /* Used to indicate successful instruction execution included with a warning message which could carry information about potential future errors */
 	FISC_RET_ERROR,   /* Used to indicate an unsuccessful instruction execution                           */
+	FISC_RET_WAIT,    /* Used to indicate to an external device that the CPU is busy                      */
 	FISC_RET__COUNT
 };
+
+/*******************************/
+/* Virtual Memory declarations */
+/*******************************/
+
+/* Page definition */
+typedef struct {
+	unsigned int present       : 1; /* (0) NOT PRESENT (1) PRESENT            */
+	unsigned int rw            : 1; /* (0) READ ONLY   (1) WRITABLE           */
+	unsigned int user          : 1; /* (0) KERNEL MODE (1) USER MODE          */
+	unsigned int writethrough  : 1;
+	unsigned int cachedisabled : 1;
+	unsigned int accessed      : 1; /* (0) NOT ACCESSED (1) ACCESSED          */
+	unsigned int dirty         : 1; /* (0) NOT BEEN WRITTEN TO (1) WRITTEN TO */
+	unsigned int unused1       : 1;
+	unsigned int global        : 1;
+	unsigned int unused2       : 3;
+	unsigned int phys_addr     : 20; /* FRAME ADDRESS */
+} page_t;
+
+/* Table entry definition: */
+typedef struct {
+	unsigned int present       : 1;  /* (0) table not present (1) table present            */
+	unsigned int rw            : 1;  /* (0) table read only (1) table writable             */
+	unsigned int user          : 1;  /* (0) kernel mode (1) user mode                      */
+	unsigned int writethrough  : 1;  /* (0) write back caching enabled (1) ... disabled    */
+	unsigned int cachedisabled : 1;  /* (0) table won't be cached (1) table will be cached */
+	unsigned int accessed      : 1;  /* (0) not accessed (1) accessed                      */
+	unsigned int unused1       : 1;
+	unsigned int page_size     : 1;  /* (0) 4kb page sizes (1) 4mb page sizes              */
+	unsigned int available     : 4;  /* available for use                                  */
+	unsigned int table_address : 20; /* address of the page directory table                */
+} page_table_entry_t;
+
+/* Many pages definition (as a table) */
+typedef struct {
+	page_t pages[FISC_PAGES_PER_TABLE]; /* 4MB per table and 4KB per page */
+} page_table_t;
+
+/* Directory definition */
+typedef struct page_directory {
+	page_table_entry_t table_entries[FISC_TABLES_PER_DIR];
+	page_table_t     * tables[FISC_TABLES_PER_DIR]; /* Array of page tables, covers entire memory space */
+} paging_directory_t;
+
+/*******************/
+/* Exception Codes */
+/*******************/
+enum EXCEPTION_CODE {
+	EXC_TRIPLEFAULT,
+	EXC_DIVZERO,
+	EXC_DEBUG,
+	EXC_NONMASK,
+	EXC_BREAKPOINT,
+	EXC_OVERFLOW,
+	EXC_BOUNDRANGE,
+	EXC_INVALOPC,
+	EXC_NODEV,
+	EXC_DOUBLEINTERRUPT, 
+	EXC_DOUBLEFAULT,
+	EXC_PERMFAULT,
+	EXC_PAGEFAULT
+};
+
+/*********************************/
+/* Instruction class declaration */
+/*********************************/
 
 /* Forward decl */
 class Instruction;

@@ -1,4 +1,4 @@
-#include <fvm/TargetRegistry.h>
+﻿#include <fvm/TargetRegistry.h>
 #include <fvm/Utils/Cmdline.h>
 #include <stdio.h>
 
@@ -55,9 +55,23 @@ void setCmdlineFlags()
 void showProgramHeader()
 {
     std::string header = 
-"                                            \n\
-           FISC Virtual Machine             \n\
-                                            \n";
+
+"                                _____ ___ ____   ____                                   \n\
+                               |  ___|_ _/ ___| / ___|                                  \n\
+                               | |_   | |\\___ \\| |                                      \n\
+                               |  _|  | | ___) | |___                                   \n\
+                               |_|   |___|____/ \\____|                                  \n\
+ __     _____ ____ _____ _   _   _    _       __  __    _    ____ _   _ ___ _   _ _____ \n\
+ \\ \\   / /_ _|  _ \\_   _| | | | / \\  | |     |  \\/  |  / \\  / ___| | | |_ _| \\ | | ____|\n\
+  \\ \\ / / | || |_) || | | | | |/ _ \\ | |     | |\\/| | / _ \\| |   | |_| || ||  \\| |  _|  \n\
+   \\ V /  | ||  _ < | | | |_| / ___ \\| |___  | |  | |/ ___ \\ |___|  _  || || |\\  | |___ \n\
+    \\_/  |___|_| \\_\\|_|  \\___/_/   \\_\\_____| |_|  |_/_/   \\_\\____|_| |_|___|_| \\_|_____|\n\
+                                                                                        \n\
+";
+
+//"                                            \n\
+//           FISC Virtual Machine             \n\
+//                                            \n";
     PRINTC(DINFO2, header.c_str());
 }
 
