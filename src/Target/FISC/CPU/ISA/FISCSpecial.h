@@ -7,15 +7,41 @@
 /**************************************************************/
 /***************** STATUS CONTROL INSTRUCTIONS ****************/
 /**************************************************************/
-NEW_INSTRUCTION(FISC, MSR, RF, /* Operation: CPSR_x? = R[Rn] (Note: the _x field is in R[Rd])*/
+NEW_INSTRUCTION(FISC, MSR, RF, /* Operation: CPSR/SPSR_x? = R[Rn] (Note: the _x field is in R[Rd])*/
 {
+	/* 1- Read the actual contents we will write into the destination register */
 	uint64_t rnReg = _cpu_->readRegister(_this_->ifmt_r->rn);
-	uint64_t cpsrRegVal = _cpu_->readRegister(SPECIAL_CPSR);
-	cpsr_t * cpsr = (cpsr_t*)&cpsrRegVal;
-	uint16_t cpsr_field = _cpu_->readRegister(_this_->ifmt_r->rd) & 0x1F;
 
-	/* Check if the current CPU mode has permissions to write to a particular field in the CPSR */
-	if(cpsr->mode == FISC_CPU_MODE_USER) {
+	/* 2- Get the CPSR/SPSR field to which we will be writing into */
+	uint16_t cpsr_field = _cpu_->readRegister(_this_->ifmt_r->rd) & 0x1F;
+	
+	/* 3- Read CPSR */
+	uint64_t cpsrRegVal = _cpu_->readRegister(SPECIAL_CPSR);
+	
+	/* 4- Read SPSR */
+	uint64_t spsrRegVal = _cpu_->readRegister(SPECIAL_SPSR0 + (cpsrRegVal & 7));
+	
+	/* 5- Now we will use 1 single pointer to write either to CPSR or SPSR */
+	uint64_t * psrRegValPtr = nullptr;
+	cpsr_t * psrPtr = nullptr;
+
+	enum SPECIAL_REGISTERS regIndex; /* Index of the destination register */
+
+	bool cpsr_or_spsr = cpsr_field & 16 ? true : false; /* 0: Write to CPSR. 1: Write to SPSR */
+	
+	if(!cpsr_or_spsr) {
+		psrRegValPtr = &cpsrRegVal; /* Point to the CPSR */
+		regIndex = SPECIAL_CPSR;
+	} else {
+		psrRegValPtr = &spsrRegVal; /* Point to the current SPSR instead of the CPSR */
+		regIndex = (enum SPECIAL_REGISTERS)(SPECIAL_SPSR0 + (cpsrRegVal & 7));
+	}
+
+	/* 6- Point the cpsr_t pointer to the selected integer pointer */
+	psrPtr = (cpsr_t*)psrRegValPtr;
+
+	/* 7- Check if the current CPU mode has permissions to write to a particular field in the CPSR */
+	if(psrPtr->mode == FISC_CPU_MODE_USER) {
 		switch (cpsr_field) {
 		case 0: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13:
 			/* The user does not have permission to read these selected CPSR fields! */
@@ -23,65 +49,93 @@ NEW_INSTRUCTION(FISC, MSR, RF, /* Operation: CPSR_x? = R[Rn] (Note: the _x field
 		}
 	}
 
-	/* We have permission. We shall now write into the CPSR register */
+	/* 8- We have permission. We shall now write into the CPSR register */
 	switch (cpsr_field) {
 	case 0: {
 		/* ALERT: WE MIGHT CHANGE CPU MODE HERE */
 		if((rnReg & 7) >= FISC_CPU_MODE_USER && (rnReg & 7) <= FISC_CPU_MODE_EXCEPTION) {
-			cpsrRegVal = rnReg;
+			*psrRegValPtr = rnReg;
 		} else {
 			/* This CPU mode is invalid! Entering Undefined CPU mode and triggering PERMFAULT exception */
-			cpsr->mode = FISC_CPU_MODE_UNDEFINED;
-			_cpu_->writeRegister(SPECIAL_CPSR, cpsrRegVal, false, 0, 0, 0);
+			psrPtr->mode = FISC_CPU_MODE_UNDEFINED;
+			_cpu_->writeRegister(regIndex, *psrRegValPtr, false, 0, 0, 0);
 			return _cpu_->triggerSoftException(EXC_PERMFAULT);
 		}
 		break;
 	}
 	case 1:
-		cpsr->c =  rnReg & 1;
-		cpsr->v = (rnReg & 2) >> 1;
-		cpsr->z = (rnReg & 4) >> 2;
-		cpsr->n = (rnReg & 8) >> 3;
+		psrPtr->c =  rnReg & 1;
+		psrPtr->v = (rnReg & 2) >> 1;
+		psrPtr->z = (rnReg & 4) >> 2;
+		psrPtr->n = (rnReg & 8) >> 3;
 		break;
-	case 2:  cpsr->n   = rnReg & 1; break;
-	case 3:  cpsr->z   = rnReg & 1; break;
-	case 4:  cpsr->v   = rnReg & 1; break;
-	case 5:  cpsr->c   = rnReg & 1; break;
-	case 6:  cpsr->ae  = rnReg & 3; break;
-	case 7:  BIT_WRITE(rnReg & 1, cpsr->ae, 0); break;
-	case 8:  BIT_WRITE(rnReg & 1, cpsr->ae, 1); break;
-	case 9:  cpsr->pg  = rnReg & 1; break;
-	case 10: cpsr->ien = rnReg & 3; break;
-	case 11: BIT_WRITE(rnReg & 1, cpsr->ien, 0); break;
-	case 12: BIT_WRITE(rnReg & 1, cpsr->ien, 1); break;
+	case 2:  psrPtr->n   = rnReg & 1; break;
+	case 3:  psrPtr->z   = rnReg & 1; break;
+	case 4:  psrPtr->v   = rnReg & 1; break;
+	case 5:  psrPtr->c   = rnReg & 1; break;
+	case 6:  psrPtr->ae  = rnReg & 3; break;
+	case 7:  BIT_WRITE(rnReg & 1, psrPtr->ae, 0); break;
+	case 8:  BIT_WRITE(rnReg & 1, psrPtr->ae, 1); break;
+	case 9:  psrPtr->pg  = rnReg & 1; break;
+	case 10: psrPtr->ien = rnReg & 3; break;
+	case 11: BIT_WRITE(rnReg & 1, psrPtr->ien, 0); break;
+	case 12: BIT_WRITE(rnReg & 1, psrPtr->ien, 1); break;
 	case 13: {
 		/* ALERT: WE'RE CHANGING CPU MODE HERE */
 		if ((rnReg & 7) >= FISC_CPU_MODE_USER && (rnReg & 7) <= FISC_CPU_MODE_EXCEPTION) {
-			cpsr->mode = rnReg & 7;
+			psrPtr->mode = rnReg & 7;
 		}
 		else {
 			/* This CPU mode is invalid! Entering Undefined CPU mode and triggering PERMFAULT exception */
-			cpsr->mode = FISC_CPU_MODE_UNDEFINED;
-			_cpu_->writeRegister(SPECIAL_CPSR, cpsrRegVal, false, 0, 0, 0);
+			psrPtr->mode = FISC_CPU_MODE_UNDEFINED;
+			_cpu_->writeRegister(regIndex, *psrRegValPtr, false, 0, 0, 0);
 			return _cpu_->triggerSoftException(EXC_PERMFAULT);
 		}
 		break;
 	}
-	default: /* Invalid CPSR field */ return FISC_RET_ERROR;
+	default: /* Invalid CPSR/SPSR field */ return FISC_RET_ERROR;
 	}
 
-	return _cpu_->writeRegister(SPECIAL_CPSR, cpsrRegVal, false, 0, 0, 0);
+	/* 9- Finally, write to the CPSR/SPSR register */
+	return _cpu_->writeRegister(regIndex, *psrRegValPtr, false, 0, 0, 0);
 });
 
-NEW_INSTRUCTION(FISC, MRS, RF, /* Operation: R[Rd] = CPSR_x? (Note: the _x field is in R[Rn])*/
+NEW_INSTRUCTION(FISC, MRS, RF, /* Operation: R[Rd] = CPSR/SPSR_x? (Note: the _x field is in R[Rn])*/
 {
-	uint64_t rdRegVal = (uint64_t)-1;
-	uint64_t cpsrRegVal = _cpu_->readRegister(SPECIAL_CPSR);
-	cpsr_t * cpsr = (cpsr_t*)&cpsrRegVal;
+	/* 1-This variable will hold the resultant value which will be stored in the register R[Rd] */
+	uint64_t rdReg = (uint64_t)-1;
+
+	/* 2- Get the CPSR/SPSR field to which we will be reading from */
 	uint16_t cpsr_field = _cpu_->readRegister(_this_->ifmt_r->rn) & 0x1F;
 
-	/* Check if the current CPU mode has permissions to read from a particular field in the CPSR */
-	if (cpsr->mode == FISC_CPU_MODE_USER) {
+	/* 3- Read CPSR (and cast it into a pointer for ease of use) */
+	uint64_t cpsrRegVal = _cpu_->readRegister(SPECIAL_CPSR);
+	
+	/* 4- Read SPSR (and cast it into a pointer for ease of use) */
+	uint64_t spsrRegVal = _cpu_->readRegister(SPECIAL_SPSR0 + (cpsrRegVal & 7));
+	
+	/* 5- Now we will use 1 single pointer to write either to CPSR or SPSR */
+	uint64_t * psrRegValPtr = nullptr;
+	cpsr_t * psrPtr = nullptr;
+
+	enum SPECIAL_REGISTERS regIndex; /* Index of the destination register */
+
+	bool cpsr_or_spsr = cpsr_field & 16 ? true : false; /* 0: Write to CPSR. 1: Write to SPSR */
+
+	if (!cpsr_or_spsr) {
+		psrRegValPtr = &cpsrRegVal; /* Point to the CPSR */
+		regIndex = SPECIAL_CPSR;
+	}
+	else {
+		psrRegValPtr = &spsrRegVal; /* Point to the current SPSR instead of the CPSR */
+		regIndex = (enum SPECIAL_REGISTERS)(SPECIAL_SPSR0 + (cpsrRegVal & 7));
+	}
+
+	/* 6- Point the cpsr_t pointer to the selected integer pointer */
+	psrPtr = (cpsr_t*)psrRegValPtr;
+
+	/* 7- Check if the current CPU mode has permissions to read from a particular field in the CPSR */
+	if (psrPtr->mode == FISC_CPU_MODE_USER) {
 		switch (cpsr_field) {
 		case 0: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13:
 			/* The user does not have permission to read these selected CPSR fields! */
@@ -89,31 +143,32 @@ NEW_INSTRUCTION(FISC, MRS, RF, /* Operation: R[Rd] = CPSR_x? (Note: the _x field
 		}
 	}
 
-	/* We have permission. We shall now read from the CPSR register */
+	/* 8- We have permission. We shall now read from the CPSR register */
 	switch (cpsr_field) {
-	case 0: rdRegVal = cpsrRegVal; break;
+	case 0: rdReg = *psrRegValPtr; break;
 	case 1: 
-		rdRegVal |= cpsr->c;
-		rdRegVal |= cpsr->v << 1;
-		rdRegVal |= cpsr->z << 2;
-		rdRegVal |= cpsr->n << 3;
+		rdReg |= psrPtr->c;
+		rdReg |= psrPtr->v << 1;
+		rdReg |= psrPtr->z << 2;
+		rdReg |= psrPtr->n << 3;
 		break;
-	case 2:  rdRegVal = cpsr->n;       break;
-	case 3:  rdRegVal = cpsr->z;       break;
-	case 4:  rdRegVal = cpsr->v;       break;
-	case 5:  rdRegVal = cpsr->c;       break;
-	case 6:  rdRegVal = cpsr->ae;      break;
-	case 7:  rdRegVal = cpsr->ae & 1;  break;
-	case 8:  rdRegVal = (cpsr->ae & 2) >> 1; break;
-	case 9:  rdRegVal = cpsr->pg;      break;
-	case 10: rdRegVal = cpsr->ien;     break;
-	case 11: rdRegVal = cpsr->ien & 1; break;
-	case 12: rdRegVal = (cpsr->ien & 2) >> 1; break;
-	case 13: rdRegVal = cpsr->mode;    break;
+	case 2:  rdReg = psrPtr->n;       break;
+	case 3:  rdReg = psrPtr->z;       break;
+	case 4:  rdReg = psrPtr->v;       break;
+	case 5:  rdReg = psrPtr->c;       break;
+	case 6:  rdReg = psrPtr->ae;      break;
+	case 7:  rdReg = psrPtr->ae & 1;  break;
+	case 8:  rdReg = (psrPtr->ae & 2) >> 1; break;
+	case 9:  rdReg = psrPtr->pg;      break;
+	case 10: rdReg = psrPtr->ien;     break;
+	case 11: rdReg = psrPtr->ien & 1; break;
+	case 12: rdReg = (psrPtr->ien & 2) >> 1; break;
+	case 13: rdReg = psrPtr->mode;    break;
 	default: /* Invalid CPSR field */ return FISC_RET_ERROR;
 	}
 
-	return _cpu_->writeRegister(_this_->ifmt_r->rd, rdRegVal, false, 0, 0, 0);
+	/* 9- Finally, write to the destination General Purpose register */
+	return _cpu_->writeRegister(_this_->ifmt_r->rd, rdReg, false, 0, 0, 0);
 });
 
 /**************************************************************/
