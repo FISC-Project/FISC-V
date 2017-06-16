@@ -17,7 +17,7 @@ NEW_INSTRUCTION(FISC, MSR, RF, /* Operation: CPSR_x? = R[Rn] (Note: the _x field
 	/* Check if the current CPU mode has permissions to write to a particular field in the CPSR */
 	if(cpsr->mode == FISC_CPU_MODE_USER) {
 		switch (cpsr_field) {
-		case 0: case 6: case 7:case 8:case 9:case 10:case 11:case 12:case 13:
+		case 0: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13:
 			/* The user does not have permission to read these selected CPSR fields! */
 			return _cpu_->triggerSoftException(EXC_PERMFAULT);
 		}
@@ -25,7 +25,18 @@ NEW_INSTRUCTION(FISC, MSR, RF, /* Operation: CPSR_x? = R[Rn] (Note: the _x field
 
 	/* We have permission. We shall now write into the CPSR register */
 	switch (cpsr_field) {
-	case 0: cpsrRegVal = rnReg; break;
+	case 0: {
+		/* ALERT: WE MIGHT CHANGE CPU MODE HERE */
+		if((rnReg & 7) >= FISC_CPU_MODE_USER && (rnReg & 7) <= FISC_CPU_MODE_EXCEPTION) {
+			cpsrRegVal = rnReg;
+		} else {
+			/* This CPU mode is invalid! Entering Undefined CPU mode and triggering PERMFAULT exception */
+			cpsr->mode = FISC_CPU_MODE_UNDEFINED;
+			_cpu_->writeRegister(SPECIAL_CPSR, cpsrRegVal, false, 0, 0, 0);
+			return _cpu_->triggerSoftException(EXC_PERMFAULT);
+		}
+		break;
+	}
 	case 1:
 		cpsr->c =  rnReg & 1;
 		cpsr->v = (rnReg & 2) >> 1;
@@ -43,7 +54,19 @@ NEW_INSTRUCTION(FISC, MSR, RF, /* Operation: CPSR_x? = R[Rn] (Note: the _x field
 	case 10: cpsr->ien = rnReg & 3; break;
 	case 11: BIT_WRITE(rnReg & 1, cpsr->ien, 0); break;
 	case 12: BIT_WRITE(rnReg & 1, cpsr->ien, 1); break;
-	case 13: cpsr->mode = rnReg & 7; break;
+	case 13: {
+		/* ALERT: WE'RE CHANGING CPU MODE HERE */
+		if ((rnReg & 7) >= FISC_CPU_MODE_USER && (rnReg & 7) <= FISC_CPU_MODE_EXCEPTION) {
+			cpsr->mode = rnReg & 7;
+		}
+		else {
+			/* This CPU mode is invalid! Entering Undefined CPU mode and triggering PERMFAULT exception */
+			cpsr->mode = FISC_CPU_MODE_UNDEFINED;
+			_cpu_->writeRegister(SPECIAL_CPSR, cpsrRegVal, false, 0, 0, 0);
+			return _cpu_->triggerSoftException(EXC_PERMFAULT);
+		}
+		break;
+	}
 	default: /* Invalid CPSR field */ return FISC_RET_ERROR;
 	}
 
@@ -60,7 +83,7 @@ NEW_INSTRUCTION(FISC, MRS, RF, /* Operation: R[Rd] = CPSR_x? (Note: the _x field
 	/* Check if the current CPU mode has permissions to read from a particular field in the CPSR */
 	if (cpsr->mode == FISC_CPU_MODE_USER) {
 		switch (cpsr_field) {
-		case 0: case 6: case 7:case 8:case 9:case 10:case 11:case 12:case 13:
+		case 0: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13:
 			/* The user does not have permission to read these selected CPSR fields! */
 			return _cpu_->triggerSoftException(EXC_PERMFAULT);
 		}

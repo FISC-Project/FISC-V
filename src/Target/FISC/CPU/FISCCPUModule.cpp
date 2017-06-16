@@ -32,11 +32,32 @@ namespace FISC {
 
 uint64_t CPUModule::readRegister(unsigned registerIndex)
 {
+    uint8_t bank = cconf->cpsr.mode;
+
+    /* Assumptions: mode/bank is never going to hold a value different than 0 .. 5 (inclusive).
+    The CPU would have triple faulted long before then. */
+
+    if(bank == FISC_CPU_MODE_KERNEL || bank == FISC_CPU_MODE_USER || registerIndex == XZR) {
+        /* We're setting the bank to kernel for no particular reason. 
+           The goal is to have both kernel and user modes to share the same bank.
+           Also, if we're reading from XZR, we don't care if the registers are banked, so
+           we set the bank value anyways for that case. */
+        bank = FISC_CPU_MODE_KERNEL;
+    }
+
+    /* Special case: if we're in IRQ/SIRQ mode, the registers X0..X15 are not banked. Because of this, we'll force the bank number to be the same of the User/Kernel */
+    if((bank == FISC_CPU_MODE_IRQ || bank == FISC_CPU_MODE_SIRQ) && registerIndex >= 0 && registerIndex <= 15)
+        bank = FISC_CPU_MODE_KERNEL;
+
+    /* Special case: if we're in Exception/Undefined mode, the registers X0..X27 are not banked. Because of this, we'll force the bank number to be the same of the User/Kernel */
+    if ((bank == FISC_CPU_MODE_EXCEPTION || bank == FISC_CPU_MODE_UNDEFINED) && registerIndex >= 0 && registerIndex <= 27)
+        bank = FISC_CPU_MODE_KERNEL;
+
     if(registerIndex < FISC_REGISTER_COUNT) {
         if(registerIndex == XZR)
             return 0;
         else
-            return cconf->x[registerIndex];
+            return cconf->x[bank][registerIndex];
     }
     else {
         switch (registerIndex) {
@@ -65,9 +86,30 @@ enum FISC_RETTYPE CPUModule::writeRegister(unsigned registerIndex,
                                            uint64_t operand1, uint64_t operand2,
                                            char operation)
 {
+    uint8_t bank = cconf->cpsr.mode;
+
+    /* Assumptions: mode/bank is never going to hold a value different than 0 .. 5 (inclusive).
+    The CPU would have triple faulted long before then. */
+
+    if (bank == FISC_CPU_MODE_KERNEL || bank == FISC_CPU_MODE_USER || registerIndex == XZR) {
+        /* We're setting the bank to kernel for no particular reason. 
+           The goal is to have both kernel and user modes to share the same bank.
+           Also, if we're writing to XZR, we don't care if the registers are banked, so
+           we set the bank value anyways for that case. */
+        bank = FISC_CPU_MODE_KERNEL;
+    }
+
+    /* Special case: if we're in IRQ/SIRQ mode, the registers X0..X15 are not banked. Because of this, we'll force the bank number to be the same of the User/Kernel */
+    if ((bank == FISC_CPU_MODE_IRQ || bank == FISC_CPU_MODE_SIRQ) && registerIndex >= 0 && registerIndex <= 15)
+        bank = FISC_CPU_MODE_KERNEL;
+
+    /* Special case: if we're in Exception/Undefined mode, the registers X0..X27 are not banked. Because of this, we'll force the bank number to be the same of the User/Kernel */
+    if ((bank == FISC_CPU_MODE_EXCEPTION || bank == FISC_CPU_MODE_UNDEFINED) && registerIndex >= 0 && registerIndex <= 27)
+        bank = FISC_CPU_MODE_KERNEL;
+
     if (registerIndex < FISC_REGISTER_COUNT) {
         if(registerIndex != XZR)
-            cconf->x[registerIndex] = data;
+            cconf->x[bank][registerIndex] = data;
     }
     else {
         switch (registerIndex) {
@@ -185,7 +227,7 @@ enum FISC_RETTYPE CPUModule::triggerHardException(unsigned excCode)
 enum FISC_RETTYPE CPUModule::intExcReturn(uint32_t retAddr)
 {
     enum FISC_RETTYPE ret;
-    if (!isInsideException || !isInsideInterrupt) {
+    if (cconf->cpsr.mode == FISC_CPU_MODE_USER || (!isInsideException || !isInsideInterrupt)) {
         /* The user / operating system attempted to return from an interrupt handler, while not being in one.
            We shall trigger a double fault exception */
         if ((ret = triggerSoftException(EXC_DOUBLEFAULT)) != FISC_RET_OK) {
@@ -346,8 +388,12 @@ enum FISC_RETTYPE CPUModule::interruptCPU(unsigned code, bool isException, bool 
             return FISC_RET_ERROR;
         }
 
-        if ((ret = disableExceptions()) == FISC_RET_ERROR && code != (unsigned)EXC_DOUBLEFAULT) {
-            /* The exceptions are already disabled. This means an exception caused an exception (also called double falt)
+        /* Disable exceptions first */
+        disableExceptions();
+        
+        if (isInsideException && code != (unsigned)EXC_DOUBLEFAULT) {
+            /* We're already inside an exception!
+               This means an exception caused an exception (also called double fault)
                The CPU will execute the double fault handler */
             return triggerSoftException(EXC_DOUBLEFAULT);
         }
@@ -369,8 +415,11 @@ enum FISC_RETTYPE CPUModule::interruptCPU(unsigned code, bool isException, bool 
         return enterEXC(jumpAddress, code);
     }
     else {
-        if ((ret = disableInterrupts()) == FISC_RET_ERROR) {
-            /* Interrupts are already disabled. This means the CPU is still executing an interrupt service routine */
+        /* Disable interrupts first */
+        disableInterrupts();
+        
+        if (isInsideInterrupt) {
+            /* We're already running an interrupt! */
             if (isInternal) {
                 /* An interrupt service on its own attempted to call another interrupt, thus causing a 'double interrupt' exception */
                 if ((ret = triggerSoftException(EXC_DOUBLEINTERRUPT)) == FISC_RET_ERROR) {
@@ -414,7 +463,7 @@ enum FISC_RETTYPE CPUModule::interruptCPU(unsigned code, bool isException, bool 
 bool CPUModule::detectOverflow(uint64_t operand1, uint64_t operand2, char operation)
 {
     switch (operation) {
-    case '+': return (operand2 > 0) && (operand1 > INT_MAX - operand2);
+    case '+': case '&': return (operand2 > 0) && (operand1 > INT_MAX - operand2);
     case '-': return (operand2 < 0) && (operand1 > INT_MAX + operand2);
     default: /* Unknown/Invalid operation */ return false;
     }
@@ -423,7 +472,7 @@ bool CPUModule::detectOverflow(uint64_t operand1, uint64_t operand2, char operat
 bool CPUModule::detectCarry(uint64_t operand1, uint64_t operand2, char operation)
 {
     switch (operation) {
-    case '+': {
+    case '+': case '&': {
         int64_t res = operand1 + operand2;
         return 1 & (((operand1 & operand2 & ~res) | (~operand1 & ~operand2 & res)) >> 63);
     }
@@ -440,8 +489,9 @@ Instruction * CPUModule::decode(uint32_t instruction)
     Instruction * result = nullptr;
 
     /* At this point, we don't know the width of the opcode.
-        Could be 11, 10, 9, 8 or even 6 bits wide. We must
-        decode by opcode size manually. */
+       Could be 11, 10, 9, 8 or even 6 bits wide. We must
+       decode by opcode size manually.
+    */
 
     /* Try to decode instruction as a 11 bit opcode */
     if((result = cconf->instruction_list[OPCODE_MASK(instruction)]) != nullptr) {
@@ -595,6 +645,12 @@ std::string CPUModule::getCurrentCPUModeStr()
     case FISC_CPU_MODE_EXCEPTION: return "EXCEPTION";
     default:                      return NULLSTR;
     }
+}
+
+enum FISC_RETTYPE CPUModule::enterUndefMode()
+{
+    cconf->cpsr.mode = FISC_CPU_MODE_UNDEFINED;
+    return FISC_RET_OK;
 }
 
 enum FISC_RETTYPE CPUModule::mmu_translate(uint32_t & retVal, uint32_t virtualAddr)
@@ -875,6 +931,8 @@ enum PassRetcode CPUModule::run()
         Instruction * decodedInstruction = decode(instruction);
         if(decodedInstruction == nullptr || !decodedInstruction->initialized) {
             DEBUG(DERROR, "Unhandled exception: instruction 0x%X (opcode 0x%X, @PC 0x%X) is undefined. Terminating.", instruction, OPCODE_MASK(instruction), pc_copy);
+            enterUndefMode();
+            triggerSoftException(EXC_INVALOPC);
             break;
         }
         disassembledInstruction = disassemble(decodedInstruction); /* Also disassemble instruction while we're at it */
@@ -897,7 +955,9 @@ enum PassRetcode CPUModule::run()
             }
 
             if (ret == FISC_RET_ERROR) {
-                DEBUG(DERROR, "Unhandled exception: execution of instruction 0x%X (opcode 0x%X, @PC 0x%X) failed.", instruction, OPCODE_MASK(instruction), pc_copy);
+                DEBUG(DERROR, "Unhandled exception: execution of instruction 0x%X (opcode 0x%X, @PC 0x%X) failed. Terminating.", instruction, OPCODE_MASK(instruction), pc_copy);
+                enterUndefMode();
+                triggerSoftException(EXC_INVALOPC);
                 break;
             }
         }

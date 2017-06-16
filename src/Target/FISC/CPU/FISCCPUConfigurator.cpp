@@ -47,7 +47,7 @@ public:
     /***********************/
     /* Register Definition */
     /***********************/
-    uint64_t x[FISC_REGISTER_COUNT]; /* General purpose 64-bit registers                  */
+    uint64_t x[FISC_REGISTER_COUNT][5]; /* General purpose 64-bit registers (banked)      */
     uint32_t pc;      /* Program Counter                                                  */
     uint32_t esr;     /* Exception Syndrome Register                                      */
     uint64_t elr;     /* Exception Link / Return Register                                 */

@@ -65,6 +65,7 @@ private:
 	std::string CPUModule::disassembleBCC(unsigned cc);
 	std::string disassemble(Instruction * instruction);
 	std::string getCurrentCPUModeStr();
+	enum FISC_RETTYPE enterUndefMode();
 	enum FISC_RETTYPE mmu_translate(uint32_t & retVal, uint32_t virtualAddr);
 
 	void dumpWarning(std::string problematicArg, std::string fullArg);
