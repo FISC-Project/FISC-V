@@ -1,0 +1,5 @@
+movi x0, 0x100
+movi x1, 0x1C
+strw x0, [x1, 0]
+ldr x0, [x1, 1]
+cmp x1,x1

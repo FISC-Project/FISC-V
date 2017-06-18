@@ -14,6 +14,8 @@ enum FILEOP {
 
 class File {
 public:
+	std::string fileName;
+
 	File(std::string fileName, unsigned int mode);
 	bool create(std::string fileName, unsigned int mode);
 	std::string & read(unsigned int bytecount);
@@ -28,11 +30,9 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& os, File & str);
 	friend std::string& operator<<(File & file, std::string & str);
-
 private:
 	bool valid;
 	unsigned int mode;
-	std::string fileName;
 	std::fstream fileHandle;
 	std::string buffer;
 };

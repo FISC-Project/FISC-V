@@ -57,6 +57,9 @@ public:
 #pragma region REGION 2: THE MEMORY STRUCTURE DEFINITION (IMPL. SPECIFIC)
 public:
     std::vector<std::bitset<MEMORY_WIDTH> > theMemory; /* The actual main memory */
+    /* The following vector will hold the initial bootloader program in ELF file format, 
+       which will be then copied into the main memory once parsed and relocated */
+    std::vector<std::bitset<MEMORY_WIDTH> > theBootloaderMemory;
     uint64_t loadedProgramSize; /* Size of the loaded program */
     File programFile; /* The file being loaded into memory */
     /* DISCLAIMER: In the future, we might want to care about a singular

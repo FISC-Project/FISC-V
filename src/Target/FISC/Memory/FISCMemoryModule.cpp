@@ -25,6 +25,7 @@
 #pragma once
 #include <fvm/Pass.h>
 #include <fvm/Utils/IO/File.h>
+#include <fvm/Utils/ELFLoader.h>
 #include <fvm/Utils/Bit.h>
 #include <fvm/TargetRegistry.h>
 #include "FISCMemoryConfigurator.cpp"
@@ -151,6 +152,11 @@ public:
         return true;
     }
 
+    uint32_t size()
+    {
+        return MEMORY_DEPTH;
+    }
+
 private:
     uint32_t alignAddress(uint32_t & address, enum FISC_DATATYPE dataType)
     {
@@ -183,6 +189,40 @@ public:
         setWhitelist(WHITELIST_MEM_MOD);
     }
 
+    bool loadMemory()
+    {
+        mconf->programFile.open();
+        std::string tmpstr;
+
+        /* Load Bootloader program */
+        for (unsigned int i = MEMORY_LOADLOC; i < mconf->getMemSize() && i < mconf->programFile.fileSize(); i++) {
+            tmpstr = mconf->programFile.read(MEMORY_WIDTH / 8);
+            if (tmpstr.size() == 1) {
+                mconf->theBootloaderMemory.push_back(std::bitset<MEMORY_WIDTH>(tmpstr[0]));
+                mconf->loadedProgramSize++;
+            }
+            else {
+                break; /* We've reached EOF */
+            }
+        }
+        mconf->programFile.close();
+
+        /* If this is an ELF file instead of a flat binary, then we must parse it and relocate it */
+        if (isFileELF(mconf->programFile) && mconf->loadedProgramSize > 0) {
+            DEBUG(DINFO, "Program is an ELF object file");
+            if ((mconf->loadedProgramSize = elfToFlatBinary(mconf->theBootloaderMemory)) == 0) {
+                DEBUG(DERROR, "Could not load the ELF file into memory");
+                return false;
+            }
+        }
+
+        /* Copy the bootloader memory into the main memory */
+        for(unsigned int i = 0; i < mconf->loadedProgramSize; i++)
+            mconf->theMemory[i] = mconf->theBootloaderMemory[i];
+        DEBUG(DINFO, "Loaded %d bytes / %d words into memory", (unsigned int)mconf->loadedProgramSize, (unsigned int)mconf->loadedProgramSize / 4);
+        return true;
+    }
+
     enum PassRetcode init()
     {
         enum PassRetcode success = PASS_RET_OK;
@@ -196,19 +236,8 @@ public:
 
         if (success == PASS_RET_OK) {
             /* Load up the memory */
-            mconf->programFile.open();
-            std::string tmpstr;
-            for (unsigned int i = MEMORY_LOADLOC; i < mconf->getMemSize() && i < mconf->programFile.fileSize(); i++) {
-                tmpstr = mconf->programFile.read(MEMORY_WIDTH / 8);
-                if (tmpstr.size() == 1) {
-                    mconf->theMemory[i] = std::bitset<MEMORY_WIDTH>(tmpstr[0]);
-                    mconf->loadedProgramSize++;
-                } else {
-                    break; /* We've reached EOF */
-                }
-            }
-            mconf->programFile.close();
-            DEBUG(DINFO, "Loaded %d bytes / %d words into memory", (unsigned int)mconf->loadedProgramSize, (unsigned int)mconf->loadedProgramSize / 4);
+            if(!loadMemory())
+                success = PASS_RET_ERR;
         }
 
         return success;

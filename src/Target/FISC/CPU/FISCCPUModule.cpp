@@ -493,6 +493,14 @@ Instruction * CPUModule::decode(uint32_t instruction)
        decode by opcode size manually.
     */
 
+    /* FIXME: This manual hardcoded decoding for the B instruction is a temporary fix! */
+    if (((OPCODE_MASK(instruction) & 0b11111100000) >> 1) == B) {
+        result = cconf->instruction_list[B >> 5];
+        result->instruction = instruction;
+        result->ifmt_b = INSTR_TO_IFMT_B(result->instruction);
+        return result;
+    }
+
     /* Try to decode instruction as a 11 bit opcode */
     if((result = cconf->instruction_list[OPCODE_MASK(instruction)]) != nullptr) {
         /* Found it! */
@@ -621,7 +629,10 @@ std::string CPUModule::disassemble(Instruction * instruction)
             stringBuild += disassembleRegister(instruction->ifmt_d->rt) + ", [" + disassembleRegister(instruction->ifmt_d->rn) + ", " + disassembleConstant(instruction->ifmt_d->dt_address) + "]";
             break;
         case IFMT_B:
-            stringBuild += disassembleConstant(instruction->ifmt_b->br_address);
+            if(instruction->opcode == BL && instruction->ifmt_b->br_address == 0)
+                stringBuild = "HALT";
+            else
+                stringBuild += disassembleConstant(instruction->ifmt_b->br_address);
             break;
         case IFMT_CB:
             stringBuild += disassembleConstant(instruction->ifmt_cb->cond_br_address);
@@ -834,7 +845,7 @@ void CPUModule::dumpInternals()
                 
                     uint32_t memEndPosInt = memEndPos != NULLSTR ? (std::stoul(memEndPos) + 1) << (memDumpDataWidthInt - 1) : 0;
                     uint32_t incVal = 1 << (memDumpDataWidthInt - 1);
-                    uint32_t ctr = 1;
+                    uint32_t ctr = 0;
 
                     if (memDumpDataWidthInt == FISC_SZ_64)
                         for (uint32_t i = memStartPosInt << (memDumpDataWidthInt - 1); i < memEndPosInt; i += incVal)
@@ -893,7 +904,10 @@ enum PassRetcode CPUModule::init()
     generatedExternalInterrupt = false;
 
     oldCPUMode = cconf->cpsr.mode;
-    
+
+    /* Setup the stack pointer to the top of the memory */
+    writeRegister(SP, memory->size(), false, 0, 0, 0);
+
     /* We're good to go */
     return PASS_RET_OK;
 }
@@ -937,7 +951,10 @@ enum PassRetcode CPUModule::run()
         }
         disassembledInstruction = disassemble(decodedInstruction); /* Also disassemble instruction while we're at it */
         DEBUG(DINFO, "|%d| @PC 0x%X = 0x%X\t|%d| %s", instructionsExecuted, pc_copy, instruction, decodedInstruction->timesExecuted + 1, disassembledInstruction.c_str());
-            
+        
+        if(decodedInstruction->opcode == BL && decodedInstruction->ifmt_b->br_address == 0)
+            break;
+
         /* 3, 4 and 5 - Execute instruction, Access Memory and Write back to the registers */
         enum FISC_RETTYPE ret = decodedInstruction->operation(decodedInstruction, decodedInstruction->passOwner);
         instructionsExecuted++;
