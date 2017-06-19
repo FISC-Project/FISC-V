@@ -201,11 +201,10 @@ enum FISC_CPU_MODE {
 };
 
 enum FISC_DATATYPE {
-	FISC_SZ_NULL,
+	FISC_SZ_64, /* DOUBLE WORD */
 	FISC_SZ_8,  /* BYTE        */
 	FISC_SZ_16, /* HALF WORD   */
 	FISC_SZ_32, /* WORD        */
-	FISC_SZ_64, /* DOUBLE WORD */
 	FISC_SZ__COUNT
 };
 
@@ -397,8 +396,8 @@ public:
 
 #define RETURN(type, msg) do{ _this_->retStr = msg; return type; } while(0);
 
-#define ALIGN_BASE(base, op) (op == 0 ? base : op == 1 ? ALIGN16(base) : op == 2 ? ALIGN32(base) : op == 3 ? ALIGN64(base) : -1)
-#define ALIGN_DTADDR(dtaddr, op) (op == 0 ? dtaddr : op == 1 ? ALIGN16(dtaddr) : op == 2 ? ALIGN32(dtaddr) : op == 3 ? ALIGN64(dtaddr) : -1)
+#define ALIGN_BASE(base, op) (op == 1 ? base : op == 2 ? ALIGN16(base) : op == 3 ? ALIGN32(base) : op == 0 ? ALIGN64(base) : -1)
+#define ALIGN_DTADDR(dtaddr, op) (op == 1 ? dtaddr : op == 2 ? ALIGN16(dtaddr) : op == 3 ? ALIGN32(dtaddr) : op == 0 ? ALIGN64(dtaddr) : -1)
 
 }
 #endif

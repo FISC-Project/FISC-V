@@ -12,3 +12,8 @@
 /toolchain/Debian/run-makefile.sh
 /toolchain/Debian/run-clean.sh
 /Project Solution.sln
+/testbench/tools/llvm-objdump.exe
+/testbench/tools/llvm-link.exe
+/testbench/tools/llc.exe
+/testbench/tools/flasm.exe
+/testbench/tools/clang.exe

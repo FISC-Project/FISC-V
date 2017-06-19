@@ -35,21 +35,21 @@ uint32_t elfToFlatBinary(std::vector<std::bitset<8> > & loadedELF)
     if(n == 0)
         return byteCount;
 
-    for (Elf_Half i = n - 1; i >= 1; i--) {
+    for (Elf_Half i = 1; i < n; i++) {
         section * sect = elfReader.sections[i];
 
         /* Only care about the following sections (for now) */
+
         if(!(sect->get_name() == ".text" || sect->get_name() == ".data"))
             continue;
 
         const char * data = sect->get_data();
         if (data) {
             for (uint32_t j = 0; j < sect->get_size(); j++) {
-                loadedELF[j] = data[j] & 0xFF;
+                loadedELF[byteCount] = data[j] & 0xFF;
                 byteCount++;
             }
         }
-
     }
 
     /* Return the number of bytes that need to be loaded */
