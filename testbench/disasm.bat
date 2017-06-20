@@ -1,22 +1,22 @@
 @CLS
 
 
-@tools\clang -target fisc-unknown-unknown -S prog.c -emit-llvm -o prog.ll
+@tools\clang -nostdlib -nostdinc -ffreestanding -fno-builtin -target fisc-unknown-unknown -S lib\entry.c -emit-llvm -o entry.ll
+
+@tools\clang -nostdlib -nostdinc -ffreestanding -fno-builtin -target fisc-unknown-unknown -S prog.c -emit-llvm -o prog.ll
 
 
-@rem tools\clang -target fisc-unknown-unknown -S prog2.c -emit-llvm -o prog2.ll
-
-@rem tools\llvm-link -S -f prog.ll prog2.ll -o theprog.ll
-
-@rem tools\llc -march=fisc -filetype=obj -o prog.o theprog.ll
+@tools\llvm-link -S -f entry.ll prog.ll -o a.ll
 
 
-@tools\llc -march=fisc -filetype=obj -o prog.o prog.ll
+@tools\llc -march=fisc -filetype=obj -o a.o a.ll
 
 
 @rm *.ll
 
 
-@readelf -a -W prog.o
 
-@C:\Users\Miguel\Desktop\llvm-fisc\build\Debug\bin\llvm-objdump -s -d prog.o
+@readelf -a -W a.o
+
+
+@tools\llvm-objdump -s -d a.o

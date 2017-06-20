@@ -41,6 +41,8 @@ private:
 
     /* List of permissions for external Passes that want to use the resources of this Pass */
     #define WHITELIST_MEM_MOD {DECL_WHITELIST_ALL(CPUModule)}
+public:
+    bool showExecution;
 #pragma endregion
 
 #pragma region REGION 2: THE MEMORY STRUCTURE DEFINITION (IMPL. SPECIFIC)
@@ -57,7 +59,7 @@ public:
         if(forceAlign)
             alignAddress(address, dataType);
 
-        if(debug)
+        if(debug && showExecution)
             DEBUG(DNORMALH, " (mrd @0x%X/%s al=%d vm=%d", address, 
                 dataType == FISC_SZ_8 ? "8bit" : dataType == FISC_SZ_16 ? "16bit" : dataType == FISC_SZ_32 ? "32bit" : dataType == FISC_SZ_64 ? "64bit" : "INVAL", 
                 forceAlign, isMMUOn);
@@ -93,11 +95,11 @@ public:
                       (uint64_t) mconf->theMemory[address + 7].to_ulong();
             break;
         default: /* Invalid data width */ 
-            if(debug)
+            if(debug && showExecution)
                 DEBUG(DNORMALH, " INVAL SZ)");
             return memVal;
         }
-        if (debug)
+        if (debug && showExecution)
             DEBUG(DNORMALH, ": 0x%X)", memVal);
         return memVal;
     }
@@ -108,7 +110,7 @@ public:
         if (forceAlign)
             alignAddress(address, dataType);
 
-        if(debug)
+        if(debug && showExecution)
             DEBUG(DNORMALH, " (mwr @0x%X/%s al=%d vm=%d", address,
                 dataType == FISC_SZ_8 ? "8bit" : dataType == FISC_SZ_16 ? "16bit" : dataType == FISC_SZ_32 ? "32bit" : dataType == FISC_SZ_64 ? "64bit" : "INVAL",
                 forceAlign, isMMUOn);
@@ -143,11 +145,11 @@ public:
             mconf->theMemory[address + 7] = (uint8_t)  data & 0xFF;
             break;
         default: /* Invalid data width */ 
-            if (debug)
+            if (debug && showExecution)
                 DEBUG(DNORMALH, " INVAL SZ)");
             return false;
         }
-        if (debug)
+        if (debug && showExecution)
             DEBUG(DNORMALH, ": 0x%X)", data);
         return true;
     }
@@ -184,7 +186,8 @@ private:
 
 #pragma region REGION 4: THE MEMORY BEHAVIOUR (GENERIC VM FUNCTIONS)
 public:
-    MemoryModule() : RunPass(MEMORY_MODULE_PRIORITY)
+    MemoryModule() : RunPass(MEMORY_MODULE_PRIORITY),
+        showExecution(false)
     {
         setWhitelist(WHITELIST_MEM_MOD);
     }
@@ -239,6 +242,8 @@ public:
             if(!loadMemory())
                 success = PASS_RET_ERR;
         }
+
+        showExecution = !cmdHasOpt("nodbgexec");
 
         return success;
     }

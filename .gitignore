@@ -17,3 +17,4 @@
 /testbench/tools/llc.exe
 /testbench/tools/flasm.exe
 /testbench/tools/clang.exe
+/testbench/tools/llvm-mc.exe

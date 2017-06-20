@@ -937,7 +937,7 @@ enum PassRetcode CPUModule::run()
     uint32_t instructionsExecuted = 1;
     uint32_t instruction = (uint32_t)-1;
     uint32_t pc_copy = (uint32_t)-1;
-    
+
     /* On every loop: 1 - Fetch instruction */
     while ((instruction = (uint32_t)mmu_read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false, false)) != (uint32_t)-1)
     {
@@ -950,17 +950,22 @@ enum PassRetcode CPUModule::run()
             break;
         }
         disassembledInstruction = disassemble(decodedInstruction); /* Also disassemble instruction while we're at it */
-        DEBUG(DINFO, "|%d| @PC 0x%X = 0x%X\t|%d| %s", instructionsExecuted, pc_copy, instruction, decodedInstruction->timesExecuted + 1, disassembledInstruction.c_str());
-        
-        if(decodedInstruction->opcode == BL && decodedInstruction->ifmt_b->br_address == 0)
-            break;
 
+        if(memory->showExecution)
+            DEBUG(DINFO, "|%d| @PC 0x%X = 0x%X\t|%d| %s", instructionsExecuted, pc_copy, instruction, decodedInstruction->timesExecuted + 1, disassembledInstruction.c_str());
+        
         /* 3, 4 and 5 - Execute instruction, Access Memory and Write back to the registers */
+        if (decodedInstruction->opcode == BL && decodedInstruction->ifmt_b->br_address == 0) {
+            instructionsExecuted++;
+            decodedInstruction->timesExecuted++;
+            break;
+        }
+
         enum FISC_RETTYPE ret = decodedInstruction->operation(decodedInstruction, decodedInstruction->passOwner);
         instructionsExecuted++;
         decodedInstruction->timesExecuted++;
         if (ret != FISC_RET_OK) {
-            if(isDebuggingEnabled()) {
+            if(isDebuggingEnabled() && memory->showExecution) {
                 /* Just for pretty output */
                 DEBUG(DNORMALH, "\t\t| ");
                 if(ret == FISC_RET_ERROR)
@@ -980,7 +985,7 @@ enum PassRetcode CPUModule::run()
         }
         else {
             /* Instruction executed successfully */
-            if(isDebuggingEnabled()) {
+            if(isDebuggingEnabled() && memory->showExecution) {
                 /* Just for pretty output */
                 if (disassembledInstruction.find("NOP") != std::string::npos) {
                     /* I really need to improve the tab alignment code... */

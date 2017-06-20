@@ -49,9 +49,9 @@ public:
     #define MEMORY_FLAG_BOOT_LONG "boot"
 
     /* Implementation properties */
-    #define MEMORY_WIDTH   8    /* The width of the memory */
-    #define MEMORY_DEPTH   1024 /* Size of memory in bytes */
-    #define MEMORY_LOADLOC 0    /* Where to load the program on startup */
+    #define MEMORY_WIDTH   8        /* The width of the memory */
+    #define MEMORY_DEPTH   33554432 /* Size of memory in bytes */
+    #define MEMORY_LOADLOC 0        /* Where to load the program on startup */
 #pragma endregion
 
 #pragma region REGION 2: THE MEMORY STRUCTURE DEFINITION (IMPL. SPECIFIC)

@@ -1,19 +1,21 @@
 @CLS
 
 
-@tools\clang -target fisc-unknown-unknown -S prog.c -emit-llvm -o prog.ll
+@tools\clang -nostdlib -nostdinc -ffreestanding -fno-builtin -target fisc-unknown-unknown -S lib\entry.c -emit-llvm -o entry.ll
 
 
-@rem tools\clang -target fisc-unknown-unknown -S prog2.c -emit-llvm -o prog2.ll
-
-@rem tools\llvm-link -S -f prog.ll prog2.ll -o theprog.ll
-
-@rem tools\llc -march=fisc -filetype=obj -o prog.o theprog.ll
+@tools\clang -nostdlib -nostdinc -ffreestanding -fno-builtin -target fisc-unknown-unknown -S prog.c -emit-llvm -o prog.ll
 
 
-@tools\llc -march=fisc -filetype=obj -o prog.o prog.ll
+@tools\llvm-link -S -f entry.ll prog.ll -o a.ll
+
+
+@tools\llc -march=fisc -filetype=obj -o a.o a.ll
+
 
 
 @rm *.ll
 
-@..\bin\Debug\fvm -t FISC -d --dump reg.10 --dump mem.64..84.32 -b .\prog.o
+
+
+@..\bin\Debug\fvm -t FISC -d --nodbgexec --dump reg.10 --dump mem.192..212.32 -c -b .\a.o
