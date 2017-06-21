@@ -42,46 +42,46 @@ NEW_INSTRUCTION(FISC, BCOND, CBF, /* Operation: if(FLAGS == cond) PC += CondBran
 	cpsr_t cpsr = *(cpsr_t*)&cpsrVal;
 
 	switch(_this_->ifmt_cb->rt) {
-		case 0: /* BEQ */
+		case BEQ:
 			if(cpsr.z) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 1: /* BNE */
+		case BNE:
 			if(!cpsr.z) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 2: /* BLT */
+		case BLT:
 			if(cpsr.n ^ cpsr.v) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 3: /* BLE */
+		case BLE:
 			if(!(!cpsr.z & !(cpsr.n ^ cpsr.v))) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 4: /* BGT */
+		case BGT:
 			if((!cpsr.z & !(cpsr.n ^ cpsr.v))) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 5: /* BGE */
+		case BGE:
 			if(!(cpsr.n ^ cpsr.v)) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 6: /* BLO */
+		case BLO:
 			if(!(cpsr.c)) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 7: /* BLS */
+		case BLS:
 			if(!(!cpsr.z & cpsr.z)) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 8: /* BHI */
+		case BHI:
 			if((!cpsr.z & cpsr.c)) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 9: /* BHS */
+		case BHS:
 			if(cpsr.c) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 10: /* BMI */
+		case BMI:
 			if(cpsr.n) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 11: /* BPL */
+		case BPL:
 			if(!cpsr.n) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 12: /* BVS */
+		case BVS:
 			if(cpsr.v) return _cpu_->branch((int32_t)addr, true);
 			break;
-		case 13: /* BVC */
+		case BVC:
 			if(!cpsr.v) return _cpu_->branch((int32_t)addr, true);
 			break;
 		default: /* Invalid Conditional Branch type */ return FISC_RET_ERROR;

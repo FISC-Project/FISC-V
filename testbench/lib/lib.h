@@ -64,15 +64,15 @@ void * malloc(size_t size)
 	return (void*)thisloc;
 }
 
-void memcpy(uint32_t * dst, uint32_t * src, int len)
+void * memcpy(uint8_t * dst, uint8_t * src, size_t len)
 {
-	for(int i = 0; i <= len; i++)
+	for(size_t i = 0; i < len; i++)
 		dst[i] = src[i];
 }
 
-void * memset(uint32_t * ptr, int val, int len)
+void * memset(uint8_t * ptr, uint8_t val, size_t len)
 {
-	for(int i = 0; i <= len; i++)
+	for(size_t i = 0; i < len; i++)
 		ptr[i] = val;
 	return ptr;
 }
@@ -81,6 +81,6 @@ void * memset(uint32_t * ptr, int val, int len)
 /******************** DEBUG ********************/
 /***********************************************/
 #define DEBUGLOC 0x300
-#define DEBUG(loc, intnum) (((int*)DEBUGLOC)[loc] = (int)intnum)
+#define DEBUG(loc, intnum) (((uint32_t*)DEBUGLOC)[loc] = (uint32_t)intnum)
 
 #endif

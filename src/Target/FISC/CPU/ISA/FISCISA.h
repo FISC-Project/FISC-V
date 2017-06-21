@@ -94,21 +94,21 @@ typedef struct ifmt_iw {
 
 #define INSTR_TO_IFMT_IW(instruction) ((ifmt_iw_t*)&instruction)
 
-enum CONDITION_CODES {
-	BEQ, /* Branch if equal (==)                 */
-	BNE, /* Branch if not equal (!=)             */
-	BLT, /* Branch if less than (<)              */
-	BLE, /* Branch if less or equal than <==)    */
-	BGT, /* Branch if greater than (>)           */
-	BGE, /* Branch if greater or equal than (>=) */
-	BLO, /* Branch if lower than (< signed)      */
-	BLS, /* Branch if lower or same (<= signed)  */
-	BHI, /* Branch if higher (> signed)          */
-	BHS, /* Branch if higher or same (>= signed) */
-	BMI, /* Branch if minus (-)                  */
-	BPL, /* Branch if plus (+)                   */
-	BVS, /* Branch on overflow set               */
-	BVC  /* Branch on overflow clear             */
+enum CONDITION_CODES { /* Note: condition codes are not 0 indexed */
+	BEQ = 1, /* Branch if equal (==)                 */
+	BNE,     /* Branch if not equal (!=)             */
+	BLT,     /* Branch if less than (<)              */
+	BLE,     /* Branch if less or equal than <==)    */
+	BGT,     /* Branch if greater than (>)           */
+	BGE,     /* Branch if greater or equal than (>=) */
+	BLO,     /* Branch if lower than (< signed)      */
+	BLS,     /* Branch if lower or same (<= signed)  */
+	BHI,     /* Branch if higher (> signed)          */
+	BHS,     /* Branch if higher or same (>= signed) */
+	BMI,     /* Branch if minus (-)                  */
+	BPL,     /* Branch if plus (+)                   */
+	BVS,     /* Branch on overflow set               */
+	BVC      /* Branch on overflow clear             */
 };
 
 enum OPCODE {

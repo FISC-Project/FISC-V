@@ -617,9 +617,13 @@ std::string CPUModule::disassemble(Instruction * instruction)
             if(instruction->ifmt_r->rd == XZR && instruction->ifmt_r->rn == XZR && instruction->ifmt_r->rm == XZR) {
                 stringBuild = "NOP";
             } else {
-                stringBuild += disassembleRegister(instruction->ifmt_r->rd);
+                if (instruction->opcode == SUBS && instruction->ifmt_r && instruction->ifmt_r->rd == XZR)
+                    stringBuild = "CMP";
+                else 
+                    stringBuild += disassembleRegister(instruction->ifmt_r->rd) + ",";
+
                 if(instruction->opcode != BR)
-                    stringBuild += ", " + disassembleRegister(instruction->ifmt_r->rn) + ", " + disassembleRegister(instruction->ifmt_r->rm);
+                    stringBuild += " " + disassembleRegister(instruction->ifmt_r->rn) + ", " + disassembleRegister(instruction->ifmt_r->rm);
             }
             break;
         case IFMT_I:
