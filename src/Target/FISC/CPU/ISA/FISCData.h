@@ -138,7 +138,7 @@ NEW_INSTRUCTION(FISC, LDR, DF, /* Operation: R[Rt] = M[R[Rn] + DTAddr] (64 bits 
         offset = ALIGN_DTADDR(offset, _this_->ifmt_d->op);
 
     /* Read memory contents (M[R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -158,7 +158,7 @@ NEW_INSTRUCTION(FISC, LDRB, DF, /* Operation: R[Rt] = M[R[Rn] + DTAddr] (8 bits 
         offset = ALIGN_DTADDR(offset, _this_->ifmt_d->op);
 
     /* Read memory contents (M[R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -178,7 +178,7 @@ NEW_INSTRUCTION(FISC, LDRH, DF, /* Operation: R[Rt] = M[R[Rn] + DTAddr] (16 bits
         offset = ALIGN_DTADDR(offset, _this_->ifmt_d->op);
 
     /* Read memory contents (M[R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -198,7 +198,7 @@ NEW_INSTRUCTION(FISC, LDRSW, DF, /* Operation: R[Rt] = M[R[Rn] + DTAddr] (32 bit
         offset = ALIGN_DTADDR(offset, _this_->ifmt_d->op);
 
     /* Read memory contents (M[R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -219,7 +219,7 @@ NEW_INSTRUCTION(FISC, LDXR, DF, /* Operation: R[Rt] = M[R[Rn] + DTAddr] (64 bits
         offset = ALIGN_DTADDR(offset, _this_->ifmt_d->op);
 
     /* Read memory contents (M[R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -242,7 +242,7 @@ NEW_INSTRUCTION(FISC, LDRR, DF, /* Operation: R[Rt] = M[PC + R[Rn] + DTAddr] (64
     offset += _cpu_->readRegister(SPECIAL_PC);
 
     /* Read memory contents (M[PC + R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -265,7 +265,7 @@ NEW_INSTRUCTION(FISC, LDRBR, DF, /* Operation: R[Rt] = M[PC + R[Rn] + DTAddr] (8
     offset += _cpu_->readRegister(SPECIAL_PC);
 
     /* Read memory contents (M[PC + R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -288,7 +288,7 @@ NEW_INSTRUCTION(FISC, LDRHR, DF, /* Operation: R[Rt] = M[PC + R[Rn] + DTAddr] (1
     offset += _cpu_->readRegister(SPECIAL_PC);
 
     /* Read memory contents (M[PC + R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -311,7 +311,7 @@ NEW_INSTRUCTION(FISC, LDRSWR, DF, /* Operation: R[Rt] = M[PC + R[Rn] + DTAddr] (
     offset += _cpu_->readRegister(SPECIAL_PC);
 
     /* Read memory contents (M[PC + R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -335,7 +335,7 @@ NEW_INSTRUCTION(FISC, LDXRR, DF, /* Operation: R[Rt] = M[PC + R[Rn] + DTAddr] (6
     offset += _cpu_->readRegister(SPECIAL_PC);
 
     /* Read memory contents (M[PC + R[Rn] + DTAddr]) */
-    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
+    uint64_t memVal = _cpu_->mmu_read((uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_LOAD_MEMORYACCESS_DEBUGGING);
 
     /* Load those contents into the register (R[Rt] = MemVal) */
     return _cpu_->writeRegister(_this_->ifmt_d->rt, memVal, false, 0, 0, 0);
@@ -361,7 +361,7 @@ NEW_INSTRUCTION(FISC, STR_, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (64 bits
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STRB, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (8 bits wide) */
@@ -381,7 +381,7 @@ NEW_INSTRUCTION(FISC, STRB, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (8 bits 
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STRH, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (16 bits wide) */
@@ -401,7 +401,7 @@ NEW_INSTRUCTION(FISC, STRH, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (16 bits
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STRW, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (32 bits wide) */
@@ -421,7 +421,7 @@ NEW_INSTRUCTION(FISC, STRW, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (32 bits
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STXR, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (64 bits wide) */
@@ -442,7 +442,7 @@ NEW_INSTRUCTION(FISC, STXR, DF, /* Operation: M[R[Rn] + DTAddr] = R[Rt] (64 bits
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STRR, DF, /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (64 bits wide) */
@@ -465,7 +465,7 @@ NEW_INSTRUCTION(FISC, STRR, DF, /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (64
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STRBR, DF,  /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (8 bits wide) */
@@ -488,7 +488,7 @@ NEW_INSTRUCTION(FISC, STRBR, DF,  /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STRHR, DF,  /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (16 bits wide) */
@@ -511,7 +511,7 @@ NEW_INSTRUCTION(FISC, STRHR, DF,  /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STRWR, DF,  /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (32 bits wide) */
@@ -534,7 +534,7 @@ NEW_INSTRUCTION(FISC, STRWR, DF,  /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 NEW_INSTRUCTION(FISC, STXRR, DF, /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (64 bits wide) */
@@ -558,7 +558,7 @@ NEW_INSTRUCTION(FISC, STXRR, DF, /* Operation: M[PC + R[Rn] + DTAddr] = R[Rt] (6
     uint64_t regVal = _cpu_->readRegister(_this_->ifmt_d->rt);
 
     /* Write register value into the memory (M[R[Rn] + DTAddr] = R[Rt]) */
-    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
+    return _cpu_->mmu_write(regVal, (uint32_t)(base + offset), (enum FISC_DATATYPE)_this_->ifmt_d->op, false, ENDIANNESS_DATASECT, ENABLE_STORE_MEMORYACCESS_DEBUGGING);
 });
 
 #endif

@@ -11,8 +11,8 @@ class Instruction;
 
 class CPUModule : public RunPass {
 private:
-	MemoryModule * memory;   /* The main memory handle */
-	CPUConfigurator * cconf; /* The configuration of the CPU. Contains the list of instructions */
+	MemoryModule    * memory; /* The main memory handle                                          */
+	CPUConfigurator * cconf;  /* The configuration of the CPU. Contains the list of instructions */
 	bool isBranching;
 	bool isInsideException;
 	bool isInsideInterrupt;
@@ -34,10 +34,10 @@ public:
 
 	uint64_t mmu_read(uint32_t address,
 	                  enum FISC_DATATYPE dataType, bool forceAlign,
-					  bool debug);
+					  bool isLittleEndian, bool debug);
 	enum FISC_RETTYPE mmu_write(uint64_t data, uint32_t address, 
 	                            enum FISC_DATATYPE dataType, bool forceAlign,
-								bool debug);
+								bool isLittleEndian, bool debug);
 
 	enum FISC_RETTYPE triggerSoftInterrupt(unsigned intCode);
 	enum FISC_RETTYPE triggerHardInterrupt(unsigned intCode);
@@ -66,7 +66,7 @@ private:
 	std::string disassemble(Instruction * instruction);
 	std::string getCurrentCPUModeStr();
 	enum FISC_RETTYPE enterUndefMode();
-	enum FISC_RETTYPE mmu_translate(uint32_t & retVal, uint32_t virtualAddr);
+	enum FISC_RETTYPE mmu_translate(uint32_t & retVal, uint32_t virtualAddr, bool isLittleEndian);
 
 	void dumpWarning(std::string problematicArg, std::string fullArg);
 	void dumpInternals();

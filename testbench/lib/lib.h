@@ -51,6 +51,8 @@ typedef unsigned int       size_t;
 
 typedef uint32_t           uintptr_t;
 
+#define nullptr ((void*)0)
+
 /**********************************************/
 /******************** HEAP ********************/
 /**********************************************/
@@ -68,6 +70,7 @@ void * memcpy(uint8_t * dst, uint8_t * src, size_t len)
 {
 	for(size_t i = 0; i < len; i++)
 		dst[i] = src[i];
+	return dst;
 }
 
 void * memset(uint8_t * ptr, uint8_t val, size_t len)
@@ -82,5 +85,6 @@ void * memset(uint8_t * ptr, uint8_t val, size_t len)
 /***********************************************/
 #define DEBUGLOC 0x300
 #define DEBUG(loc, intnum) (((uint32_t*)DEBUGLOC)[loc] = (uint32_t)intnum)
+#define DEBUGLIST(listsize, list) for(size_t _i_ = 0; _i_ < (size_t)listsize; _i_++) DEBUG(_i_, list[_i_]);
 
 #endif

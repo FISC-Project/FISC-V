@@ -155,7 +155,7 @@ enum FISC_RETTYPE CPUModule::branch(uint32_t new_addr, bool isPCRel)
     return success;
 }
 
-uint64_t CPUModule::mmu_read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
+uint64_t CPUModule::mmu_read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isLittleEndian, bool debug)
 {
     if (cconf->cpsr.pg) {
         /* Paging is enabled. We must access the memory using the value inside register
@@ -163,22 +163,22 @@ uint64_t CPUModule::mmu_read(uint32_t address, enum FISC_DATATYPE dataType, bool
            Using this virtual address, we can access the page directory to look for the
            real physical memory address. Only then we can really access the memory module */
         uint32_t physicalAddress = (uint32_t)-1;
-        if(mmu_translate(physicalAddress, address) != FISC_RET_OK) {
+        if(mmu_translate(physicalAddress, address, isLittleEndian) != FISC_RET_OK) {
             /* The current cpu mode does not have access privileges over this page. 
                Calling the page fault ISR ... */
             triggerSoftException(EXC_PAGEFAULT);
             return (uint64_t)-1;
         }
 
-        return memory->read(physicalAddress, dataType, forceAlign, cconf->cpsr.pg, debug);
+        return memory->read(physicalAddress, dataType, forceAlign, cconf->cpsr.pg, isLittleEndian, debug);
     }
     else {
         /* Paging is disabled */
-        return memory->read(address, dataType, forceAlign, cconf->cpsr.pg, debug);
+        return memory->read(address, dataType, forceAlign, cconf->cpsr.pg, isLittleEndian, debug);
     }
 }
 
-enum FISC_RETTYPE CPUModule::mmu_write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool debug)
+enum FISC_RETTYPE CPUModule::mmu_write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isLittleEndian, bool debug)
 {
     if (cconf->cpsr.pg) {
         /* Paging is enabled. We must access the memory using the value inside register
@@ -186,17 +186,17 @@ enum FISC_RETTYPE CPUModule::mmu_write(uint64_t data, uint32_t address, enum FIS
            Using this virtual address, we can access the page directory to look for the
            real physical memory address. Only then we can really access the memory module */
         uint32_t physicalAddress = (uint32_t)-1;
-        if (mmu_translate(physicalAddress, address) != FISC_RET_OK) {
+        if (mmu_translate(physicalAddress, address, isLittleEndian) != FISC_RET_OK) {
             /* The current cpu mode does not have access privileges over this page.
                Calling the page fault ISR ... */
             return triggerSoftException(EXC_PAGEFAULT);
         }
 
-        return memory->write(data, physicalAddress, dataType, forceAlign, cconf->cpsr.pg, debug) ? FISC_RET_OK : FISC_RET_ERROR;
+        return memory->write(data, physicalAddress, dataType, forceAlign, cconf->cpsr.pg, isLittleEndian, debug) ? FISC_RET_OK : FISC_RET_ERROR;
     }
     else {
         /* Paging is disabled */
-        return memory->write(data, address, dataType, forceAlign, cconf->cpsr.pg, debug) ? FISC_RET_OK : FISC_RET_ERROR;
+        return memory->write(data, address, dataType, forceAlign, cconf->cpsr.pg, isLittleEndian, debug) ? FISC_RET_OK : FISC_RET_ERROR;
     }
 }
 
@@ -668,7 +668,7 @@ enum FISC_RETTYPE CPUModule::enterUndefMode()
     return FISC_RET_OK;
 }
 
-enum FISC_RETTYPE CPUModule::mmu_translate(uint32_t & retVal, uint32_t virtualAddr)
+enum FISC_RETTYPE CPUModule::mmu_translate(uint32_t & retVal, uint32_t virtualAddr, bool isLittleEndian)
 {
     /* Get the physical address of the page directory */
     uint32_t pageDirectoryAddress = (uint32_t)readRegister(SPECIAL_PDP);
@@ -686,7 +686,7 @@ enum FISC_RETTYPE CPUModule::mmu_translate(uint32_t & retVal, uint32_t virtualAd
     uint32_t tableAddress = pageDirectoryAddress + (tableIdx * sizeof(page_table_t));
     uint32_t tableEntryAddress = pageDirectoryAddress + (FISC_TABLES_PER_DIR * sizeof(page_table_t)) + (tableIdx * sizeof(page_table_entry_t));
 
-    memVal = memory->read(tableEntryAddress, FISC_SZ_32, false, cconf->cpsr.pg, false);
+    memVal = memory->read(tableEntryAddress, FISC_SZ_32, false, cconf->cpsr.pg, isLittleEndian, false);
     page_table_entry_t * pageTableEntry = (page_table_entry_t*)(*(uint64_t*)&memVal);
     
     /* See if the table is mapped */
@@ -699,7 +699,7 @@ enum FISC_RETTYPE CPUModule::mmu_translate(uint32_t & retVal, uint32_t virtualAd
 
     /* Calculate the physical address of the page */
     uint32_t pageAddress = tableAddress + (pageIdx * sizeof(page_t));
-    memVal = memory->read(pageAddress, FISC_SZ_32, false, cconf->cpsr.pg, false);
+    memVal = memory->read(pageAddress, FISC_SZ_32, false, cconf->cpsr.pg, isLittleEndian, false);
     page_t * pageEntry = (page_t*)(*(uint64_t*)&memVal);
 
     /* See if the page is mapped */
@@ -851,12 +851,21 @@ void CPUModule::dumpInternals()
                     uint32_t incVal = 1 << (memDumpDataWidthInt - 1);
                     uint32_t ctr = 0;
 
-                    if (memDumpDataWidthInt == FISC_SZ_64)
-                        for (uint32_t i = memStartPosInt << (memDumpDataWidthInt - 1); i < memEndPosInt; i += incVal)
-                            DEBUG(DINFO, "|%d| M[0x%X]\t= 0x%I64X", ctr++, i, memory->read(i, (enum FISC_DATATYPE)memDumpDataWidthInt, false, false, false));
-                    else
-                        for (uint32_t i = memStartPosInt << (memDumpDataWidthInt - 1); i < memEndPosInt; i += incVal)
-                            DEBUG(DINFO, "|%d| M[0x%X]\t= 0x%X", ctr++, i, memory->read(i, (enum FISC_DATATYPE)memDumpDataWidthInt, false, false, false));
+                    for (uint32_t i = memStartPosInt << (memDumpDataWidthInt - 1); i < memEndPosInt; i += incVal) {
+                        bool isLittleEndian = ENDIANNESS_DATASECT;
+
+                        for(auto & s : memory->get_elfsection_list()) {
+                            if (i >= s.start && i < s.end) {
+                                isLittleEndian = s.isLittleEndian;
+                                break;
+                            }
+                        }
+
+                        if (memDumpDataWidthInt == FISC_SZ_64)
+                            DEBUG(DINFO, "|%d| M[0x%X]\t= 0x%I64X", ctr++, i, memory->read(i, (enum FISC_DATATYPE)memDumpDataWidthInt, false, false, isLittleEndian, false));
+                        else
+                            DEBUG(DINFO, "|%d| M[0x%X]\t= 0x%X", ctr++, i, memory->read(i, (enum FISC_DATATYPE)memDumpDataWidthInt, false, false, isLittleEndian, false));
+                    }
 
                     DEBUG(DINFO2, "Dump completed");
                     DEBUG(DNORMALH, "\n");
@@ -943,7 +952,7 @@ enum PassRetcode CPUModule::run()
     uint32_t pc_copy = (uint32_t)-1;
 
     /* On every loop: 1 - Fetch instruction */
-    while ((instruction = (uint32_t)mmu_read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false, false)) != (uint32_t)-1)
+    while ((instruction = (uint32_t)mmu_read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false, ENDIANNESS_TEXTSECT, false)) != (uint32_t)-1)
     {
         /* 2 - Decode instruction */
         Instruction * decodedInstruction = decode(instruction);

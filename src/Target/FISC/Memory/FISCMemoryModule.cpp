@@ -53,7 +53,7 @@ private:
 
 #pragma region REGION 3: THE MEMORY BEHAVIOUR (IMPL. SPECIFIC)
 public:
-    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isMMUOn, bool debug)
+    uint64_t read(uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isMMUOn, bool isLittleEndian, bool debug)
     {
         /* Align (or not) the address */
         if(forceAlign)
@@ -75,24 +75,44 @@ public:
             memVal = mconf->theMemory[address].to_ulong();
             break;
         case FISC_SZ_16:
-            memVal = (mconf->theMemory[address].to_ulong() << 8) |
-                      mconf->theMemory[address + 1].to_ulong();
+            if(isLittleEndian)
+                memVal = (mconf->theMemory[address + 1].to_ulong() << 8) |
+                          mconf->theMemory[address].to_ulong();
+            else
+                memVal = (mconf->theMemory[address].to_ulong() << 8) |
+                          mconf->theMemory[address + 1].to_ulong();
             break;
         case FISC_SZ_32:
-            memVal = (mconf->theMemory[address].to_ulong()     << 24) |
-                     (mconf->theMemory[address + 1].to_ulong() << 16) |
-                     (mconf->theMemory[address + 2].to_ulong() << 8)  |
-                      mconf->theMemory[address + 3].to_ulong();
+            if (isLittleEndian)
+                memVal = (mconf->theMemory[address + 3].to_ulong() << 24) |
+                         (mconf->theMemory[address + 2].to_ulong() << 16) |
+                         (mconf->theMemory[address + 1].to_ulong() << 8)  |
+                          mconf->theMemory[address].to_ulong();
+            else
+                memVal = (mconf->theMemory[address].to_ulong()     << 24) |
+                         (mconf->theMemory[address + 1].to_ulong() << 16) |
+                         (mconf->theMemory[address + 2].to_ulong() << 8)  |
+                          mconf->theMemory[address + 3].to_ulong();
             break;
         case FISC_SZ_64:
-            memVal = ((uint64_t)(mconf->theMemory[address].to_ulong())    << 56) |
-                     ((uint64_t) mconf->theMemory[address + 1].to_ulong() << 48) |
-                     ((uint64_t) mconf->theMemory[address + 2].to_ulong() << 40) |
-                     ((uint64_t) mconf->theMemory[address + 3].to_ulong() << 32) |
-                     ((uint64_t) mconf->theMemory[address + 4].to_ulong() << 24) |
-                     ((uint64_t) mconf->theMemory[address + 5].to_ulong() << 16) |
-                     ((uint64_t) mconf->theMemory[address + 6].to_ulong() << 8)  |
-                      (uint64_t) mconf->theMemory[address + 7].to_ulong();
+            if (isLittleEndian)
+                memVal = ((uint64_t)(mconf->theMemory[address + 7].to_ulong()) << 56) |
+                         ((uint64_t) mconf->theMemory[address + 6].to_ulong()  << 48) |
+                         ((uint64_t) mconf->theMemory[address + 5].to_ulong()  << 40) |
+                         ((uint64_t) mconf->theMemory[address + 4].to_ulong()  << 32) |
+                         ((uint64_t) mconf->theMemory[address + 3].to_ulong()  << 24) |
+                         ((uint64_t) mconf->theMemory[address + 2].to_ulong()  << 16) |
+                         ((uint64_t) mconf->theMemory[address + 1].to_ulong()  << 8)  |
+                          (uint64_t) mconf->theMemory[address].to_ulong();
+            else
+                memVal = ((uint64_t)(mconf->theMemory[address].to_ulong())    << 56) |
+                         ((uint64_t) mconf->theMemory[address + 1].to_ulong() << 48) |
+                         ((uint64_t) mconf->theMemory[address + 2].to_ulong() << 40) |
+                         ((uint64_t) mconf->theMemory[address + 3].to_ulong() << 32) |
+                         ((uint64_t) mconf->theMemory[address + 4].to_ulong() << 24) |
+                         ((uint64_t) mconf->theMemory[address + 5].to_ulong() << 16) |
+                         ((uint64_t) mconf->theMemory[address + 6].to_ulong() << 8)  |
+                          (uint64_t) mconf->theMemory[address + 7].to_ulong();
             break;
         default: /* Invalid data width */ 
             if(debug && showExecution)
@@ -104,7 +124,7 @@ public:
         return memVal;
     }
 
-    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isMMUOn, bool debug)
+    bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isMMUOn, bool isLittleEndian, bool debug)
     {
         /* Align (or not) the address */
         if (forceAlign)
@@ -125,24 +145,47 @@ public:
             mconf->theMemory[address] = (uint8_t)data;
             break;
         case FISC_SZ_16:
-            mconf->theMemory[address]     = (uint8_t)((data & 0xFF00) >> 8);
-            mconf->theMemory[address + 1] = (uint8_t)data & 0xFF;
+            if (isLittleEndian) {
+                mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF00) >> 8);
+                mconf->theMemory[address]     = (uint8_t)data & 0xFF;
+            } else {
+                mconf->theMemory[address]     = (uint8_t)((data & 0xFF00) >> 8);
+                mconf->theMemory[address + 1] = (uint8_t)data & 0xFF;
+            }
             break;
         case FISC_SZ_32:
-            mconf->theMemory[address]     = (uint8_t)((data & 0xFF000000) >> 24);
-            mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF0000) >> 16);
-            mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF00) >> 8);
-            mconf->theMemory[address + 3] = (uint8_t)  data & 0xFF;
+            if (isLittleEndian) {
+                mconf->theMemory[address + 3] = (uint8_t)((data & 0xFF000000) >> 24);
+                mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF0000) >> 16);
+                mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF00) >> 8);
+                mconf->theMemory[address]     = (uint8_t)data & 0xFF;
+            } else {
+                mconf->theMemory[address]     = (uint8_t)((data & 0xFF000000) >> 24);
+                mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF0000) >> 16);
+                mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF00) >> 8);
+                mconf->theMemory[address + 3] = (uint8_t)data & 0xFF;
+            }
             break;
         case FISC_SZ_64:
-            mconf->theMemory[address]     = (uint8_t)((data & 0xFF00000000000000) >> 56);
-            mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF000000000000) >> 48);
-            mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF0000000000) >> 40);
-            mconf->theMemory[address + 3] = (uint8_t)((data & 0xFF00000000) >> 32);
-            mconf->theMemory[address + 4] = (uint8_t)((data & 0xFF000000) >> 24);
-            mconf->theMemory[address + 5] = (uint8_t)((data & 0xFF0000) >> 16);
-            mconf->theMemory[address + 6] = (uint8_t)((data & 0xFF00) >> 8);
-            mconf->theMemory[address + 7] = (uint8_t)  data & 0xFF;
+            if (isLittleEndian) {
+                mconf->theMemory[address + 7] = (uint8_t)((data & 0xFF00000000000000) >> 56);
+                mconf->theMemory[address + 6] = (uint8_t)((data & 0xFF000000000000) >> 48);
+                mconf->theMemory[address + 5] = (uint8_t)((data & 0xFF0000000000) >> 40);
+                mconf->theMemory[address + 4] = (uint8_t)((data & 0xFF00000000) >> 32);
+                mconf->theMemory[address + 3] = (uint8_t)((data & 0xFF000000) >> 24);
+                mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF0000) >> 16);
+                mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF00) >> 8);
+                mconf->theMemory[address]     = (uint8_t)data & 0xFF;
+            } else {
+                mconf->theMemory[address]     = (uint8_t)((data & 0xFF00000000000000) >> 56);
+                mconf->theMemory[address + 1] = (uint8_t)((data & 0xFF000000000000) >> 48);
+                mconf->theMemory[address + 2] = (uint8_t)((data & 0xFF0000000000) >> 40);
+                mconf->theMemory[address + 3] = (uint8_t)((data & 0xFF00000000) >> 32);
+                mconf->theMemory[address + 4] = (uint8_t)((data & 0xFF000000) >> 24);
+                mconf->theMemory[address + 5] = (uint8_t)((data & 0xFF0000) >> 16);
+                mconf->theMemory[address + 6] = (uint8_t)((data & 0xFF00) >> 8);
+                mconf->theMemory[address + 7] = (uint8_t)data & 0xFF;
+            }
             break;
         default: /* Invalid data width */ 
             if (debug && showExecution)
@@ -157,6 +200,11 @@ public:
     uint32_t size()
     {
         return MEMORY_DEPTH;
+    }
+
+    elfsection_list_t get_elfsection_list()
+    {
+        return mconf->elfsection_list;
     }
 
 private:
@@ -213,7 +261,7 @@ public:
         /* If this is an ELF file instead of a flat binary, then we must parse it and relocate it */
         if (isFileELF(mconf->programFile) && mconf->loadedProgramSize > 0) {
             DEBUG(DINFO, "Program is an ELF object file");
-            if ((mconf->loadedProgramSize = elfToFlatBinary(mconf->theBootloaderMemory)) == 0) {
+            if ((mconf->loadedProgramSize = elfToFlatBinary(mconf->theBootloaderMemory, mconf->elfsection_list, ENDIANNESS_TEXTSECT, ENDIANNESS_DATASECT)) == 0) {
                 DEBUG(DERROR, "Could not load the ELF file into memory");
                 return false;
             }

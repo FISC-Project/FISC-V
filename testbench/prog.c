@@ -14,6 +14,5 @@ void start()
 	memcpy(ptr2, ptr1, sizeof(int) * arraysize);
 
 	/* Show ptr2 contents */
-	for(int i = 0; i < arraysize; i++)
-		DEBUG(i, ptr2[i]);
+	DEBUGLIST(arraysize, ptr2);
 }

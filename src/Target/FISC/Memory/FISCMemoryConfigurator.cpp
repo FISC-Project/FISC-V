@@ -27,6 +27,7 @@
 #include <fvm/Utils/Cmdline.h>
 #include <fvm/Utils/String.h>
 #include <fvm/Utils/IO/File.h>
+#include <fvm/Utils/ELFLoader.h>
 #include <fstream>
 #include <vector>
 #include <bitset>
@@ -66,6 +67,7 @@ public:
        file being loaded into memory as the absolute program being loaded. 
        In other words, the first program that is loaded might be responsible for
        loading other files, thus rendering this variable useless. */
+    elfsection_list_t elfsection_list;
 #pragma endregion
 
 #pragma region REGION 3: THE MEMORY CONFIGURATION IMPLEMENTATION (IMPL SPECIFIC)

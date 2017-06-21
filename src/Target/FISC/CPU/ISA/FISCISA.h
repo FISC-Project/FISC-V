@@ -13,15 +13,18 @@ namespace FISC {
 /* FISC Instruction Set Declaration */
 /************************************/
 
-#define FISC_INSTRUCTION_SZ         32 /* How wide is the instruction (in bits, not bytes)                                  */
-#define FISC_REGISTER_COUNT         32 /* How many registers will we use                                                    */
-#define FISC_SPECIAL_REGISTER_COUNT 14 /* How many special registers will we use                                            */
-#define FISC_TOTAL_REGISTER_COUNT (FISC_REGISTER_COUNT + FISC_SPECIAL_REGISTER_COUNT) /* How many registers in total        */
-#define FISC_DEFAULT_EXEC_MODE FISC_CPU_MODE_KERNEL /* The default mode of execution of the CPU                             */
-#define FISC_PAGES_PER_TABLE   1024   /* How many pages are present on an MMU's Table entry                                 */
-#define FISC_TABLES_PER_DIR    1024   /* How many tables can a Page directory hold                                          */
-#define FISC_PAGE_SIZE         0x1000 /* How large of a block each Page entry can represent                                 */
-#define FISC_USER_SYSCALL_CODE 0xFFF  /* The interrupt number the user must use when executing system calls (or interrupts) */
+#define FISC_INSTRUCTION_SZ         32     /* How wide is the instruction (in bits, not bytes)                                   */
+#define FISC_REGISTER_COUNT         32     /* How many registers will we use                                                     */
+#define FISC_SPECIAL_REGISTER_COUNT 14     /* How many special registers will we use                                             */
+#define FISC_TOTAL_REGISTER_COUNT (FISC_REGISTER_COUNT + FISC_SPECIAL_REGISTER_COUNT) /* How many registers in total             */
+#define FISC_DEFAULT_EXEC_MODE      FISC_CPU_MODE_KERNEL /* The default mode of execution of the CPU                             */
+#define FISC_PAGES_PER_TABLE        1024   /* How many pages are present on an MMU's Table entry                                 */
+#define FISC_TABLES_PER_DIR         1024   /* How many tables can a Page directory hold                                          */
+#define FISC_PAGE_SIZE              0x1000 /* How large of a block each Page entry can represent                                 */
+#define FISC_USER_SYSCALL_CODE      0xFFF  /* The interrupt number the user must use when executing system calls (or interrupts) */
+
+#define ENDIANNESS_TEXTSECT false /* 0: big endian 1: little endian */
+#define ENDIANNESS_DATASECT true  /* 0: big endian 1: little endian */
 
 enum INSTRUCTION_FMT {
 	IFMT_R,  /* Register-Register     Format */
