@@ -51,6 +51,8 @@ typedef unsigned int       size_t;
 
 typedef uint32_t           uintptr_t;
 
+typedef char *             string;
+
 #define nullptr ((void*)0)
 
 /**********************************************/
@@ -66,25 +68,41 @@ void * malloc(size_t size)
 	return (void*)thisloc;
 }
 
-void * memcpy(uint8_t * dst, uint8_t * src, size_t len)
+void * memcpy(void * dst, void * src, size_t len)
 {
+	uint8_t * dst_ = (uint8_t*)dst;
+	uint8_t * src_ = (uint8_t*)src;
 	for(size_t i = 0; i < len; i++)
-		dst[i] = src[i];
+		dst_[i] = src_[i];
 	return dst;
 }
 
-void * memset(uint8_t * ptr, uint8_t val, size_t len)
+void * memset(void * dst, int32_t val, size_t len)
 {
+	uint8_t * dst_ = (uint8_t*)dst;
 	for(size_t i = 0; i < len; i++)
-		ptr[i] = val;
-	return ptr;
+		dst_[i] = val;
+	return dst;
 }
 
 /***********************************************/
 /******************** DEBUG ********************/
 /***********************************************/
 #define DEBUGLOC 0x300
-#define DEBUG(loc, intnum) (((uint32_t*)DEBUGLOC)[loc] = (uint32_t)intnum)
-#define DEBUGLIST(listsize, list) for(size_t _i_ = 0; _i_ < (size_t)listsize; _i_++) DEBUG(_i_, list[_i_]);
+#define DEBUG(loc, intnum) (((uint32_t*)DEBUGLOC)[(loc)] = ((uint32_t)(intnum)))
+#define DEBUGLIST(listsize, list) for(size_t _i_ = 0; _i_ < ((size_t)(listsize)); _i_++) DEBUG(_i_, ((uint32_t*)(list)[_i_]));
+#define DEBUGLISTOFF(offset, listsize, list) for(size_t _i_ = ((size_t)(offset)); _i_ < ((size_t)(offset)) + ((size_t)(listsize)); _i_++) DEBUG(_i_, ((uint32_t*)(list)[_i_ - ((size_t)(offset))]));
+
+/************************************************/
+/******************** STRING ********************/
+/************************************************/
+
+size_t strlen(string str)
+{
+	size_t size = 0;
+	while(str[size] != '\0')
+		size++;
+	return size;
+}
 
 #endif

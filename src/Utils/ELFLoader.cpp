@@ -1,3 +1,8 @@
+#ifdef _MSC_VER
+#define _SCL_SECURE_NO_WARNINGS
+#define ELFIO_NO_INTTYPES
+#endif
+
 #include <fvm/Utils/ELFLoader.h>
 #include <iostream>
 #include <algorithm>

@@ -850,6 +850,7 @@ void CPUModule::dumpInternals()
                     uint32_t memEndPosInt = memEndPos != NULLSTR ? (std::stoul(memEndPos) + 1) << (memDumpDataWidthInt - 1) : 0;
                     uint32_t incVal = 1 << (memDumpDataWidthInt - 1);
                     uint32_t ctr = 0;
+                    char memDumpFmt[256];
 
                     for (uint32_t i = memStartPosInt << (memDumpDataWidthInt - 1); i < memEndPosInt; i += incVal) {
                         bool isLittleEndian = ENDIANNESS_DATASECT;
@@ -861,10 +862,19 @@ void CPUModule::dumpInternals()
                             }
                         }
 
+                        uint64_t memval = memory->read(i, (enum FISC_DATATYPE)memDumpDataWidthInt, false, false, isLittleEndian, false);
+
                         if (memDumpDataWidthInt == FISC_SZ_64)
-                            DEBUG(DINFO, "|%d| M[0x%X]\t= 0x%I64X", ctr++, i, memory->read(i, (enum FISC_DATATYPE)memDumpDataWidthInt, false, false, isLittleEndian, false));
+                            sprintf(memDumpFmt, "|%d| M[0x%X]\t= 0x%I64X", ctr++, i, memval);
                         else
-                            DEBUG(DINFO, "|%d| M[0x%X]\t= 0x%X", ctr++, i, memory->read(i, (enum FISC_DATATYPE)memDumpDataWidthInt, false, false, isLittleEndian, false));
+                            sprintf(memDumpFmt, "|%d| M[0x%X]\t= 0x%X", ctr++, i, (uint32_t)memval);
+                        
+                        /* Append memval in character format */
+                        if (memval >= 32 && memval <= 126)
+                            sprintf(memDumpFmt, "%s (%c)", memDumpFmt, (char)memval);
+
+                        /* Show memory debug information */
+                        DEBUG(DINFO, memDumpFmt);
                     }
 
                     DEBUG(DINFO2, "Dump completed");

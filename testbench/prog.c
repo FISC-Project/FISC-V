@@ -1,5 +1,7 @@
 #include "lib/lib.h"
 
+char str[] = "Test String";
+
 void start()
 {
 	int arraysize = 5;
@@ -15,4 +17,7 @@ void start()
 
 	/* Show ptr2 contents */
 	DEBUGLIST(arraysize, ptr2);
+
+	/* Show str contents */
+	//DEBUGLISTOFF(arraysize, strlen(str), str); // FIXME
 }
