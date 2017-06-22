@@ -58,7 +58,7 @@ typedef char *             string;
 /**********************************************/
 /******************** HEAP ********************/
 /**********************************************/
-#define ALLOCLOC 0x400
+#define ALLOCLOC 0x20000
 uintptr_t alloc_head __data = ALLOCLOC;
 
 void * malloc(size_t size)
@@ -88,7 +88,7 @@ void * memset(void * dst, int32_t val, size_t len)
 /***********************************************/
 /******************** DEBUG ********************/
 /***********************************************/
-#define DEBUGLOC 0x300
+#define DEBUGLOC 0x10000
 #define DEBUG(loc, intnum) (((uint32_t*)DEBUGLOC)[(loc)] = ((uint32_t)(intnum)))
 #define DEBUGLIST(listsize, list) for(size_t _i_ = 0; _i_ < ((size_t)(listsize)); _i_++) DEBUG(_i_, ((uint32_t*)(list)[_i_]));
 #define DEBUGLISTOFF(offset, listsize, list) for(size_t _i_ = ((size_t)(offset)); _i_ < ((size_t)(offset)) + ((size_t)(listsize)); _i_++) DEBUG(_i_, ((uint32_t*)(list)[_i_ - ((size_t)(offset))]));

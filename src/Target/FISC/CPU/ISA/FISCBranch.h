@@ -23,10 +23,16 @@ NEW_INSTRUCTION(FISC, BL, BF, /* Operation: R[LR] = PC + 4; PC = PC + br_address
 });
 
 /**************************************************************/
-/*********************** BR INSTRUCTION ***********************/
+/****************** BR and BRL INSTRUCTIONS *******************/
 /**************************************************************/
-NEW_INSTRUCTION(FISC, BR, RF, /* Operation: PC = R[Rt] */
+NEW_INSTRUCTION(FISC, BR, RF, /* Operation: PC = R[Rd] */
 {
+	return _cpu_->branch((uint32_t)_cpu_->readRegister(_this_->ifmt_r->rd), false);
+});
+
+NEW_INSTRUCTION(FISC, BRL, RF, /* Operation: R[LR] = PC + 4; PC = R[Rd] */
+{
+	_cpu_->writeRegister(LR, _cpu_->readRegister(SPECIAL_PC) + 4, false, 0, 0, 0);
 	return _cpu_->branch((uint32_t)_cpu_->readRegister(_this_->ifmt_r->rd), false);
 });
 

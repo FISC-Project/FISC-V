@@ -130,7 +130,7 @@ enum OPCODE {
 	LDPC  = 0x544,
 	/* BRANCHING */
 	B     = 0x0A0, BL    = 0x4A0,
-	BR    = 0x6B0,
+	BR    = 0x6B0, BRL   = 0x6B1,
 	CBNZ  = 0x5A8, CBZ   = 0x5A0,
 	BCOND = 0x2A0,
 	/* LOAD AND STORE */

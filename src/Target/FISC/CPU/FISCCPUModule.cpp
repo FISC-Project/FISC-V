@@ -488,6 +488,9 @@ Instruction * CPUModule::decode(uint32_t instruction)
 {
     Instruction * result = nullptr;
 
+    if(instruction == (uint32_t)-1)
+        return result;
+
     /* At this point, we don't know the width of the opcode.
        Could be 11, 10, 9, 8 or even 6 bits wide. We must
        decode by opcode size manually.
@@ -961,12 +964,15 @@ enum PassRetcode CPUModule::run()
     uint32_t instruction = (uint32_t)-1;
     uint32_t pc_copy = (uint32_t)-1;
 
-    /* On every loop: 1 - Fetch instruction */
-    while ((instruction = (uint32_t)mmu_read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false, ENDIANNESS_TEXTSECT, false)) != (uint32_t)-1)
+    /* On every loop:  */
+    while (1)
     {
+        /* 1 - Fetch instruction */
+        instruction = (uint32_t)mmu_read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false, ENDIANNESS_TEXTSECT, false);
+
         /* 2 - Decode instruction */
         Instruction * decodedInstruction = decode(instruction);
-        if(decodedInstruction == nullptr || !decodedInstruction->initialized) {
+        if(instruction == (uint32_t)-1 || decodedInstruction == nullptr || !decodedInstruction->initialized) {
             DEBUG(DERROR, "Unhandled exception: instruction 0x%X (opcode 0x%X, @PC 0x%X) is undefined. Terminating.", instruction, OPCODE_MASK(instruction), pc_copy);
             enterUndefMode();
             triggerSoftException(EXC_INVALOPC);
