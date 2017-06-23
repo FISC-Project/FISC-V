@@ -623,9 +623,9 @@ std::string CPUModule::disassemble(Instruction * instruction)
                 if (instruction->opcode == SUBS && instruction->ifmt_r && instruction->ifmt_r->rd == XZR)
                     stringBuild = "CMP";
                 else 
-                    stringBuild += disassembleRegister(instruction->ifmt_r->rd) + ",";
+                    stringBuild += disassembleRegister(instruction->ifmt_r->rd) + (instruction->opcode != BR && instruction->opcode != BRL ? "," : "");
 
-                if(instruction->opcode != BR)
+                if(instruction->opcode != BR && instruction->opcode != BRL)
                     stringBuild += " " + disassembleRegister(instruction->ifmt_r->rn) + ", " + disassembleRegister(instruction->ifmt_r->rm);
             }
             break;

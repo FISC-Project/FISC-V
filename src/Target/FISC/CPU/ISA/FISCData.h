@@ -64,22 +64,25 @@ NEW_INSTRUCTION(FISC, MOVRZ, IWF, /* Operation: R[Rt](quadrant) = PC + MOVImm (C
 {
     uint64_t pcVal = _cpu_->readRegister(SPECIAL_PC);
 
+    int32_t movimm = (int32_t)_this_->ifmt_iw->mov_immediate;
+    if (movimm & (1 << (16 - 1))) movimm = -((~movimm + 1) & 0xFFFF); /* Fix non 64-bit number signedness */
+    
     switch (_this_->ifmt_iw->quadrant) {
     case 0:
         return _cpu_->writeRegister(_this_->ifmt_iw->rt, 
-                                    (pcVal & 0xFFFF) + (_this_->ifmt_iw->mov_immediate & 0xFFFF),
+                                    (pcVal & 0xFFFF) + movimm,
                                     false, 0,0,0);
     case 1:
         return _cpu_->writeRegister(_this_->ifmt_iw->rt, 
-                                    ((pcVal & 0xFFFF) << 16) + ((uint64_t)(_this_->ifmt_iw->mov_immediate & 0xFFFF) << 16),
+                                    ((pcVal & 0xFFFF) << 16) + ((uint64_t)(movimm) << 16),
                                     false, 0,0,0);
     case 2:
         return _cpu_->writeRegister(_this_->ifmt_iw->rt,
-                                    ((uint64_t)(_this_->ifmt_iw->mov_immediate & 0xFFFF) << 32),
+                                    ((uint64_t)(movimm) << 32),
                                     false, 0, 0, 0);
     case 3:
         return _cpu_->writeRegister(_this_->ifmt_iw->rt, 
-                                    ((uint64_t)(_this_->ifmt_iw->mov_immediate & 0xFFFF) << 48),
+                                    ((uint64_t)(movimm) << 48),
                                     false, 0,0,0);
     }
     return FISC_RET_ERROR;
@@ -90,22 +93,25 @@ NEW_INSTRUCTION(FISC, MOVRK, IWF, /* Operation: R[Rt](quadrant) = PC + MOVImm */
     uint64_t dstRegVal = _cpu_->readRegister(_this_->ifmt_iw->rt);
     uint64_t pcVal = _cpu_->readRegister(SPECIAL_PC);
 
+    int32_t movimm = (int32_t)_this_->ifmt_iw->mov_immediate;
+    if (movimm & (1 << (16 - 1))) movimm = -((~movimm + 1) & 0xFFFF); /* Fix non 64-bit number signedness */
+
     switch (_this_->ifmt_iw->quadrant) {
         case 0:
             dstRegVal &= 0xFFFFFFFFFFFF0000;
-            dstRegVal |= (pcVal & 0xFFFF) + (_this_->ifmt_iw->mov_immediate & 0xFFFF);
+            dstRegVal |= (pcVal & 0xFFFF) + movimm;
             break;
         case 1:
             dstRegVal &= 0xFFFFFFFF0000FFFF;
-            dstRegVal |= ((pcVal & 0xFFFF) << 16) + ((_this_->ifmt_iw->mov_immediate & 0xFFFF) << 16);
+            dstRegVal |= ((pcVal & 0xFFFF) << 16) + (movimm << 16);
             break;
         case 2:
             dstRegVal &= 0xFFFF0000FFFFFFFF;
-            dstRegVal |= ((uint64_t)((_this_->ifmt_iw->mov_immediate & 0xFFFF)) << 32);
+            dstRegVal |= ((uint64_t)(movimm) << 32);
             break;
         case 3:
             dstRegVal &= 0x0000FFFFFFFFFFFF;
-            dstRegVal |= ((uint64_t)((_this_->ifmt_iw->mov_immediate & 0xFFFF)) << 48);
+            dstRegVal |= ((uint64_t)(movimm) << 48);
             break;
         default: return FISC_RET_ERROR;
     }

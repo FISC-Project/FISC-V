@@ -1,20 +1,23 @@
-#define DEBUGLOC 0x10000
-#define DEBUG(loc, intnum) (((unsigned int*)DEBUGLOC)[(loc)] = ((unsigned int)(intnum)))
+#include "lib/lib.h"
 
-typedef int (*fptr_t)(void);
-
-int foo(void)
-{
-	return 7;
-}
+char str[] = "Test String";
 
 void start()
 {
-	fptr_t fptr = &foo;
-	int r = fptr();
+	int arraysize = 5;
 
-	DEBUG(0, fptr());
-	DEBUG(1, fptr());
-	DEBUG(2, r);
-	DEBUG(3, 10);
+	/* Create and store data on ptr1 */
+	int * ptr1 = (int*)malloc(sizeof(int) * arraysize);
+	for(int i = 0; i <= arraysize; i++)
+		ptr1[i] = i + 1;
+
+	/* Create ptr2 and copy the data from ptr1 */
+	int * ptr2 = (int*)malloc(sizeof(int) * arraysize);
+	memcpy(ptr2, ptr1, sizeof(int) * arraysize);
+
+	/* Show ptr2 contents */
+	DEBUGLIST(arraysize, ptr2);
+
+	/* Show str contents */
+	DEBUGLISTOFF(arraysize, strlen(str), str); // FIXME
 }
