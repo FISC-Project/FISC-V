@@ -1,6 +1,7 @@
 #ifndef TargetRegistry_H_
 #define TargetRegistry_H_
 
+#include <fvm/Runtime.h>
 #include <vector>
 #include <string>
 #include <fvm/Utils/String.h>
@@ -37,17 +38,14 @@ public:
 	TargetRegistry(std::string targetName, std::vector<Pass*> passList);
 	~TargetRegistry();
 
-	static bool launchTarget(std::string targetName);
-	static bool launchTarget(unsigned int targetIndex);
-
 	Pass * getPass(Pass * passID, std::string passName);
 	Pass * getPass(Pass * passID, unsigned int passIndex);
-	
-	bool run();
 
 private:
-	bool running;
+	Runtime runContext;
 	std::vector<Pass*> passList;
+
+	friend class Runtime;
 };
 
 #endif

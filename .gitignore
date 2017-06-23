@@ -18,3 +18,13 @@
 /testbench/tools/flasm.exe
 /testbench/tools/clang.exe
 /testbench/tools/llvm-mc.exe
+/testbench_c/tools/llvm-objdump.exe
+/testbench_c/tools/llvm-mc.exe
+/testbench_c/tools/llvm-link.exe
+/testbench_c/tools/llc.exe
+/testbench_c/tools/flasm.exe
+/testbench_c/tools/clang.exe
+/testbench_rust/tools/llvm-objdump.exe
+/testbench_rust/tools/llvm-mc.exe
+/testbench_rust/tools/llvm-link.exe
+/testbench_rust/tools/llc.exe

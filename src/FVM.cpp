@@ -1,4 +1,5 @@
 ﻿#include <fvm/TargetRegistry.h>
+#include <fvm/Runtime.h>
 #include <fvm/Utils/Cmdline.h>
 #include <stdio.h>
 
@@ -98,7 +99,7 @@ int main(int argc, char ** argv)
     } else {
         DEBUG(DGOOD, "Launching %s target . . .", launchTargetName.c_str());
         DEBUG(DNORMALH, "\n-------------------------------------------");
-        if (!(success = TargetRegistry::launchTarget(launchTargetName))) {
+        if (!(success = Runtime::launchTarget(launchTargetName))) {
             DEBUG(DERROR, "Execution of target %s failed", launchTargetName.c_str());
         }
     }

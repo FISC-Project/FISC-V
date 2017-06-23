@@ -15,9 +15,9 @@ void start()
 	int * ptr2 = (int*)malloc(sizeof(int) * arraysize);
 	memcpy(ptr2, ptr1, sizeof(int) * arraysize);
 
-	/* Show ptr2 contents */
-	DEBUGLIST(arraysize, ptr2);
-
 	/* Show str contents */
-	DEBUGLISTOFF(arraysize, strlen(str), str); // FIXME
+	DEBUGLIST(strlen(str), str);
+
+	/* Show ptr2 contents */
+	DEBUGLISTOFF(strlen(str), arraysize, ptr2);
 }

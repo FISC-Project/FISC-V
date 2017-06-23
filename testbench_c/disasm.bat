@@ -20,3 +20,5 @@
 
 
 @tools\llvm-objdump -s -d a.o
+
+@rm *.o
