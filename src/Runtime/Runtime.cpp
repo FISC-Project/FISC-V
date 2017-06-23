@@ -9,6 +9,11 @@ Runtime::Runtime(TargetRegistry * theTarget)
 
 }
 
+static void runErrorDebug(std::string errorMessage, TargetRegistry * theTarget, Pass * theFailingPass)
+{
+	DEBUG(DERROR, errorMessage.c_str(), theTarget->targetName.c_str(), theFailingPass->passName.c_str());
+}
+
 bool Runtime::run(TargetRegistry * theTarget)
 {
 	std::vector<Pass*> sublistPassInitFinit;
@@ -48,49 +53,74 @@ bool Runtime::run(TargetRegistry * theTarget)
 
 	theTarget->runContext.running = true;
 
-	/* First run initilization passes (the 2 foreach loops were intentional) */
-	for (auto initFinitPass : sublistPassInitFinit)
-		if (initFinitPass->init() != PASS_RET_OK) /* Initialize target parameters */
+	/* First, run global target initilization passes serially 
+	   (the 2 foreach loops were intentional) */
+	for (auto initFinitPass : sublistPassInitFinit) {
+		if (initFinitPass->init() != PASS_RET_OK) { /* Initialize target parameters */
+			runErrorDebug("Could not globally initialize target %s @ %s", theTarget, initFinitPass);
 			return false;
-	for (auto initFinitPass : sublistPassInitFinit)
-		if (initFinitPass->run() != PASS_RET_OK) /* Initialize the machine at the implementation level */
+		}
+	}
+	for (auto initFinitPass : sublistPassInitFinit) {
+		if (initFinitPass->run() != PASS_RET_OK) { /* Initialize the machine at the implementation level */
+			runErrorDebug("Could not globally initialize the running parameters of target %s @ %s", theTarget, initFinitPass);
 			return false;
-
-	/* Now run config pass */
-	for (auto configPass : sublistPassConfig)
-	{
-		if (configPass->init() != PASS_RET_OK)
-			return false;
-		if (configPass->run() != PASS_RET_OK)
-			return false;
-		if (configPass->finit() != PASS_RET_OK)
-			return false;
+		}
 	}
 
-	/* Initialize all machine implementations */
-	for (auto runPass : sublistPassRun)
-		if (runPass->init() != PASS_RET_OK)
+	/* Now run all the config passes (also serially) */
+	for (auto configPass : sublistPassConfig)
+	{
+		if (configPass->init() != PASS_RET_OK) {
+			runErrorDebug("Could not initialize the configurator of target %s @ %s", theTarget, configPass);
 			return false;
+		}
+		if (configPass->run() != PASS_RET_OK) {
+			runErrorDebug("Could not configure the target %s @ %s", theTarget, configPass);
+			return false;
+		}
+		if (configPass->finit() != PASS_RET_OK) {
+			runErrorDebug("Could not terminate configuration for target %s @ %s", theTarget, configPass);
+			return false;
+		}
+	}
 
-	/* Execute all machine implementations */
-	for (auto runPass : sublistPassRun)
-		if (runPass->run() != PASS_RET_OK)
+	/* Initialize all machine implementations serially */
+	for (auto runPass : sublistPassRun) {
+		if (runPass->init() != PASS_RET_OK) {
+			runErrorDebug("Could not initialize implementation of target %s @ %s", theTarget, runPass);
 			return false;
+		}
+	}
+
+	/* Execute all machine implementations all in separate threads */
+	for (auto runPass : sublistPassRun) {
+		if (runPass->run() != PASS_RET_OK) {
+			runErrorDebug("Execution of target %s @ %s finished with errors", theTarget, runPass);
+			return false;
+		}
+	}
 
 	/* The main thread will now stay here polling each
-	* Watchdog pass and waiting for any close request
-	* from any pass */
+	   Watchdog pass and waiting for any close request
+	   from any pass */
 	/* TODO */
 
-	/* Close and cleanup all machine implementations in reverse order */
-	for (int i = sublistPassRun.size() - 1; i >= 0; i--)
-		if (sublistPassRun[i]->finit() != PASS_RET_OK)
+	/* Close and cleanup all machine implementations in reverse order and serially */
+	for (int i = sublistPassRun.size() - 1; i >= 0; i--) {
+		if (sublistPassRun[i]->finit() != PASS_RET_OK) {
+			runErrorDebug("Could not terminate implementation of target %s @ %s", theTarget, sublistPassRun[i]);
 			return false;
+		}
+	}
 
-	/* Finally, run finit passes */
-	for (auto initFinitPass : sublistPassInitFinit)
-		if (initFinitPass->finit() != PASS_RET_OK)
+	/* Finally, run finit passes serially */
+	for (auto initFinitPass : sublistPassInitFinit) {
+		if (initFinitPass->finit() != PASS_RET_OK) {
+			runErrorDebug("Could not globally terminate target %s @ %s", theTarget, initFinitPass);
 			return false;
+		}
+	}
 
 	theTarget->runContext.running = false;
 	return true;

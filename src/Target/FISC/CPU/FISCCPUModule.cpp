@@ -751,7 +751,8 @@ void CPUModule::dumpInternals()
                 }
                     
                 /* Dump registers */
-                DEBUG(DNORMALH, "\n");
+                if (i == 0)
+                    DEBUG(DNORMALH, "\n");
                 DEBUG(DINFO2, "Dumping register contents (count: %d)", dumpRegCount >= FISC_TOTAL_REGISTER_COUNT ? FISC_TOTAL_REGISTER_COUNT : dumpRegCount);
                 for (uint16_t i = 0; i < dumpRegCount && i < FISC_TOTAL_REGISTER_COUNT; i++) {
                     if (i == SPECIAL_PC || i == SPECIAL_ESR || (i >= SPECIAL_CPSR && i <= SPECIAL_SPSR5))
@@ -838,9 +839,10 @@ void CPUModule::dumpInternals()
             
                 /* Now we can finally dump the memory */
                 if (memStartPos != NULLSTR) {
-                    DEBUG(DNORMALH, "\n");
+                    if(i == 0)
+                        DEBUG(DNORMALH, "\n");
                     DEBUG(DINFO2, "Dumping memory contents (dump arguments: %s)", memRange.c_str());
-                    uint32_t memStartPosInt = std::stol(memStartPos);
+                    uint32_t memStartPosInt = strIsHexNumber(memStartPos) ? std::stol(memStartPos.substr(2, memStartPos.size()), 0, 16) : std::stol(memStartPos, 0, 10);
                     uint32_t memDumpDataWidthInt = memDumpDataWidth != NULLSTR ? std::stol(memDumpDataWidth) : FISC_SZ_8;
                     switch (memDumpDataWidthInt) {
                         case 8:  memDumpDataWidthInt = FISC_SZ_8;  break;
@@ -849,13 +851,13 @@ void CPUModule::dumpInternals()
                         case 64: memDumpDataWidthInt = FISC_SZ_64; break;
                         default: memDumpDataWidthInt = FISC_SZ_8;  break;
                     }
-                
-                    uint32_t memEndPosInt = memEndPos != NULLSTR ? (std::stoul(memEndPos) + 1) << (memDumpDataWidthInt - 1) : 0;
+
+                    uint32_t memEndPosInt = memEndPos != NULLSTR ? (strIsHexNumber(memEndPos) ? std::stol(memEndPos, 0, 16) : std::stol(memEndPos, 0, 10)) + 1 : 0;
                     uint32_t incVal = 1 << (memDumpDataWidthInt - 1);
                     uint32_t ctr = 0;
                     char memDumpFmt[256];
 
-                    for (uint32_t i = memStartPosInt << (memDumpDataWidthInt - 1); i < memEndPosInt; i += incVal) {
+                    for (uint32_t i = memStartPosInt; i < memEndPosInt; i += incVal) {
                         bool isLittleEndian = ENDIANNESS_DATASECT;
 
                         for(auto & s : memory->get_elfsection_list()) {
@@ -946,7 +948,7 @@ enum PassRetcode CPUModule::finit()
 
 enum PassRetcode CPUModule::run()
 {
-    DEBUG(DGOOD,"EXECUTING (mode: %s)...\n", getCurrentCPUModeStr().c_str());
+    DEBUG(DGOOD,"EXECUTING (mode: %s)...%s", getCurrentCPUModeStr().c_str(), memory->showExecution ? "\n" : "");
     
     /* 
     -- CPU ALGORITHM --
@@ -959,6 +961,7 @@ enum PassRetcode CPUModule::run()
         * Repeat *
     */
 
+    bool successfulExecution = false;
     std::string disassembledInstruction = NULLSTR;
     uint32_t instructionsExecuted = 1;
     uint32_t instruction = (uint32_t)-1;
@@ -967,10 +970,10 @@ enum PassRetcode CPUModule::run()
     /* On every loop:  */
     while (1)
     {
-        /* 1 - Fetch instruction */
+        /* Stage 1 - Fetch instruction */
         instruction = (uint32_t)mmu_read((pc_copy = (uint32_t)readRegister(SPECIAL_PC)), FISC_SZ_32, false, ENDIANNESS_TEXTSECT, false);
 
-        /* 2 - Decode instruction */
+        /* Stage 2 - Decode instruction */
         Instruction * decodedInstruction = decode(instruction);
         if(instruction == (uint32_t)-1 || decodedInstruction == nullptr || !decodedInstruction->initialized) {
             DEBUG(DERROR, "Unhandled exception: instruction 0x%X (opcode 0x%X, @PC 0x%X) is undefined. Terminating.", instruction, OPCODE_MASK(instruction), pc_copy);
@@ -983,13 +986,15 @@ enum PassRetcode CPUModule::run()
         if(memory->showExecution)
             DEBUG(DINFO, "|%d| @PC 0x%X = 0x%X\t|%d| %s", instructionsExecuted, pc_copy, instruction, decodedInstruction->timesExecuted + 1, disassembledInstruction.c_str());
         
-        /* 3, 4 and 5 - Execute instruction, Access Memory and Write back to the registers */
         if (decodedInstruction->opcode == BL && decodedInstruction->ifmt_b->br_address == 0) {
             instructionsExecuted++;
             decodedInstruction->timesExecuted++;
+            successfulExecution = true;
             break;
         }
 
+        /* Stages 3, 4 and 5 - Execute instruction, Access Memory and Write back to the registers */
+        
         enum FISC_RETTYPE ret = decodedInstruction->operation(decodedInstruction, decodedInstruction->passOwner);
         instructionsExecuted++;
         decodedInstruction->timesExecuted++;
@@ -1039,8 +1044,9 @@ enum PassRetcode CPUModule::run()
         generatedExternalInterrupt = false;
     }
 
-    DEBUG(DNORMALH, "\n");
-    DEBUG(DGOOD, "DONE EXECUTING (%d instructions executed)", instructionsExecuted - 1);
+    if(memory->showExecution)
+        DEBUG(DNORMALH, "\n");
+    DEBUG(successfulExecution ? DGOOD : DERROR, "DONE EXECUTING (%d instructions executed)", instructionsExecuted - 1);
 
     dumpInternals();
 
