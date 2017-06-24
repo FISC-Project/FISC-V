@@ -948,7 +948,7 @@ enum PassRetcode CPUModule::finit()
 
 enum PassRetcode CPUModule::run()
 {
-    DEBUG(DGOOD,"EXECUTING (mode: %s)...%s", getCurrentCPUModeStr().c_str(), memory->showExecution ? "\n" : "");
+    DEBUG(DGOOD,"EXECUTING CPU (mode: %s)...%s", getCurrentCPUModeStr().c_str(), memory->showExecution ? "\n" : "");
     
     /* 
     -- CPU ALGORITHM --

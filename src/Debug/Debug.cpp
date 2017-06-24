@@ -1,7 +1,15 @@
 #include <fvm/Debug/Debug.h>
 #include <fvm/Utils/String.h>
+#include <TinyThread++-1.1/tinythread.h>
+#include <TinyThread++-1.1/fast_mutex.h>
 #include <vector>
 #include <iostream>
+
+using namespace tthread;
+
+#define LOCK(mut) lock_guard<mutex> lock(mut)
+
+static mutex glob_debug_mutex;
 
 static bool debugging = false;
 static bool isDebuggingInitialized = false;
@@ -196,6 +204,7 @@ namespace debug {
 
 bool DEBUG(enum DEBUG_KIND kind, std::string kindName, bool kindByName, enum DEBUG_TYPE type, bool override_flag, std::string fmt, va_list args)
 {
+	LOCK(glob_debug_mutex);
 	static char debugBuff[2048];
 	static char debugBuffHeader[128];
 	debugTypeEntry_t * debugTypeEntry = nullptr;

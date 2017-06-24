@@ -15,7 +15,9 @@ enum PassType {
 enum PassRetcode {
 	PASS_RET_NULL,
 	PASS_RET_OK,
+	PASS_RET_NOTHINGTODO,
 	PASS_RET_ERR,
+	PASS_RET_FATAL,
 	PASS_RET_COUNT
 };
 

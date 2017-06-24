@@ -306,7 +306,7 @@ public:
     {
         /* For now we don't want to keep anything running on this thread.
            We're keeping it relatively simple (for now!!) */
-        return PASS_RET_OK;
+        return PASS_RET_NOTHINGTODO;
     }
 
     enum PassRetcode watchdog()

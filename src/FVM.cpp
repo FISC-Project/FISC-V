@@ -83,7 +83,7 @@ int main(int argc, char ** argv)
     /* Parse the command line */
     cmdlineParse(argc, argv);
 
-    if(cmdHasOpt('c') || cmdHasOpt("nocolor"))
+    if(!(cmdHasOpt('c') || cmdHasOpt("nocolor")))
         debugEnableDisableColor(false);
 
     if(enableHeaderFooter = !((cmdHasOpt('n') || cmdHasOpt("noheader"))))
