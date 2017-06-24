@@ -2,6 +2,7 @@
 #include <fvm/Runtime.h>
 #include <fvm/Utils/Cmdline.h>
 #include <stdio.h>
+#include <TinyThread++-1.1/tinythread.h>
 
 std::vector<TargetRegistry*> TargetRegistry::TheTargetList;
 
@@ -53,6 +54,13 @@ void setCmdlineFlags()
         launchTargetName = cmdQuery("target").second;
 }
 
+void debugHostSystemStatus()
+{
+    DEBUG(DINFO, " -- System information --");
+    DEBUG(DINFO, "Number of CPU cores: %d", thread::hardware_concurrency());
+    DEBUG(DINFO, " -- System information -- End");
+}
+
 void showProgramHeader()
 {
     std::string header = 
@@ -94,10 +102,13 @@ int main(int argc, char ** argv)
     /****************************/
     setCmdlineFlags();
 
+    if(isDebuggingEnabled())
+        debugHostSystemStatus();
+
     if ((success = (launchTargetName == NULLSTR))) {
         DEBUG(DERROR, "You must provide the flag -t <target> or --target <target>");
     } else {
-        DEBUG(DGOOD, "Launching %s target . . .", launchTargetName.c_str());
+        DEBUG(DINFO, "Launching target %s ...", launchTargetName.c_str());
         DEBUG(DNORMALH, "\n-------------------------------------------");
         if (!(success = Runtime::launchTarget(launchTargetName))) {
             DEBUG(DERROR, "Execution of target %s failed", launchTargetName.c_str());

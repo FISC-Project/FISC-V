@@ -3,6 +3,10 @@
 
 #include <string>
 
+class TargetRegistry;
+
+#define DEBUGTYPEENTRY_OWNER_VM ((TargetRegistry*)-1)
+
 enum DEBUG_LEVEL {
 	DEBUG_LEVEL_NULL = -1,
 	DNONE,
@@ -39,6 +43,7 @@ typedef struct {
 	std::string levelName;
 	std::string typeName;
 	std::string kindName;
+	TargetRegistry * targetOwner;
 } debugTypeEntry_t;
 
 extern void enableDebugging();
@@ -48,7 +53,7 @@ extern enum DEBUG_LEVEL getDebuggingLevel();
 extern bool isDebuggingEnabled();
 extern std::string debugLevelToStr(enum DEBUG_LEVEL level);
 extern bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry);
-extern bool setNewDefaultDebugType(enum DEBUG_KIND kind, std::string kindName);
+extern bool setNewDefaultDebugType(enum DEBUG_KIND kind, std::string kindName, TargetRegistry * targetOwner);
 extern void debugEnableDisableColor(bool enable);
 
 namespace debug {

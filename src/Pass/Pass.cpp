@@ -3,7 +3,7 @@
 #include <stdarg.h>
 
 Pass::Pass(enum PassType type, unsigned int priority)
-	: parentTarget(nullptr), isTargetSet(false), resourcesLocked(false)
+: parentTarget(nullptr), isTargetSet(false), resourcesLocked(false), status(PASS_STATUS_NOTSTARTED)
 {
 	this->type = type;
 	this->priority = priority;
@@ -19,7 +19,7 @@ bool Pass::setParentTargetContext(TargetRegistry * parentTarget)
 {
 	if(!isTargetSet) {
 		/* Create a new default debug entry for this pass while we're at it */
-		setNewDefaultDebugType(DCUSTOM, this->passName);
+		setNewDefaultDebugType(DCUSTOM, this->passName, parentTarget);
 		this->parentTarget = parentTarget;
 		isTargetSet = true;
 		return isTargetSet;
@@ -277,6 +277,17 @@ bool Pass::changeDebugLevel(enum DEBUG_LEVEL newLevel)
 	return debug::changeDebugLevel(passName, newLevel);
 }
 
+bool Pass::setStatus(enum PassStatus newStatus)
+{
+	status = newStatus;
+	return true;
+}
+
+enum PassStatus Pass::getStatus()
+{
+	return status;
+}
+
 InitPass::InitPass(unsigned int priority)
 : Pass(PASS_RUNTIME_INIT_FINIT, priority)
 {
@@ -290,7 +301,7 @@ ConfigPass::ConfigPass(unsigned int priority)
 }
 
 RunPass::RunPass(unsigned int priority)
- : Pass(PASS_RUNTIME, priority)
+: Pass(PASS_RUNTIME, priority)
 {
 
 }

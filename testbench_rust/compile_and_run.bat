@@ -10,6 +10,6 @@
 
 
 
-@..\bin\Debug\fvm -t FISC -d --nodbgexec --dump reg.10 --dump mem.16384..16404.32 -c -b .\a.o
+@..\bin\Release\fvm -t FISC -d --nodbgexec --dump reg.10 --dump mem.16384..16404.32 -c -b .\a.o
 
 @rm *.o

@@ -1,5 +1,6 @@
 #include <fvm/Debug/Debug.h>
 #include <fvm/Utils/String.h>
+#include <fvm/TargetRegistry.h>
 #include <TinyThread++-1.1/tinythread.h>
 #include <TinyThread++-1.1/fast_mutex.h>
 #include <vector>
@@ -21,7 +22,7 @@ static std::vector<debugTypeEntry_t> debugTypeEntries;
 void initializeDebugging()
 {
 	/* Create standard debug types and kinds used by the VM */
-	setNewDefaultDebugType(DVM, "VM");
+	setNewDefaultDebugType(DVM, "VM", DEBUGTYPEENTRY_OWNER_VM);
 	isDebuggingInitialized = true;
 }
 
@@ -73,8 +74,8 @@ bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry)
 	/* See if this debug entry type already exists */
 	for (debugTypeEntry_t entry : debugTypeEntries) {
 		if(entry.level == newDebugTypeEntry.level && strTolower(entry.levelName) == strTolower(newDebugTypeEntry.levelName) &&
-		   entry.type == newDebugTypeEntry.type   && strTolower(entry.typeName) == strTolower(newDebugTypeEntry.typeName) &&
-		   entry.kind == newDebugTypeEntry.kind   && strTolower(entry.kindName) == strTolower(newDebugTypeEntry.kindName))
+		   entry.type  == newDebugTypeEntry.type  && strTolower(entry.typeName)  == strTolower(newDebugTypeEntry.typeName)  &&
+		   entry.kind  == newDebugTypeEntry.kind  && strTolower(entry.kindName)  == strTolower(newDebugTypeEntry.kindName))
 			return false;
 	}
 
@@ -83,16 +84,16 @@ bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry)
 	return true;
 }
 
-bool setNewDefaultDebugType(enum DEBUG_KIND kind, std::string kindName)
+bool setNewDefaultDebugType(enum DEBUG_KIND kind, std::string kindName, TargetRegistry * targetOwner)
 {
-	debugTypeEntries.push_back(debugTypeEntry_t{DNONE, DNORMAL,  kind, debugLevelToStr(DNONE), "INFO",    kindName }); /* The debug type that is used when there is no debugging */
-	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DNORMAL,  kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used as a way to print normal text without potential meaning */
-	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DNORMALH, kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used as a way to print normal text without potential meaning (no header) */
-	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DGOOD,    kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used to print valid information */
-	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DINFO,    kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used to print general purpose information */
-	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DINFO2,   kind, debugLevelToStr(DALL),  "INFO",    kindName }); /* The debug type that is used to print general purpose information */
-	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DWARN,    kind, debugLevelToStr(DALL),  "WARNING", kindName }); /* The debug type that is used to print warnings */
-	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DERROR,   kind, debugLevelToStr(DALL),  "ERROR",   kindName }); /* The debug type that is used to print errors */
+	debugTypeEntries.push_back(debugTypeEntry_t{DNONE, DNORMAL,  kind, debugLevelToStr(DNONE), "INFO",    kindName, targetOwner }); /* The debug type that is used when there is no debugging                                          */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DNORMAL,  kind, debugLevelToStr(DALL),  "INFO",    kindName, targetOwner }); /* The debug type that is used as a way to print normal text without potential meaning             */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DNORMALH, kind, debugLevelToStr(DALL),  "INFO",    kindName, targetOwner }); /* The debug type that is used as a way to print normal text without potential meaning (no header) */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DGOOD,    kind, debugLevelToStr(DALL),  "INFO",    kindName, targetOwner }); /* The debug type that is used to print valid information                                          */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DINFO,    kind, debugLevelToStr(DALL),  "INFO",    kindName, targetOwner }); /* The debug type that is used to print general purpose information                                */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DINFO2,   kind, debugLevelToStr(DALL),  "INFO",    kindName, targetOwner }); /* The debug type that is used to print general purpose information                                */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DWARN,    kind, debugLevelToStr(DALL),  "WARNING", kindName, targetOwner }); /* The debug type that is used to print warnings                                                   */
+	debugTypeEntries.push_back(debugTypeEntry_t{DALL,  DERROR,   kind, debugLevelToStr(DALL),  "ERROR",   kindName, targetOwner }); /* The debug type that is used to print errors                                                     */
 	return true;
 }
 
@@ -242,15 +243,28 @@ bool DEBUG(enum DEBUG_KIND kind, std::string kindName, bool kindByName, enum DEB
 	}
 
 	if (!override_flag && type != DNORMALH) {
+		std::string targetName;
+		std::string passName;
+		if (debugTypeEntry->targetOwner == DEBUGTYPEENTRY_OWNER_VM) {
+			targetName = "VM";
+			passName = "";
+		}
+		else {
+			targetName = debugTypeEntry->targetOwner->targetName;
+			passName = "@" + debugTypeEntry->kindName;
+		}
+
 		if(debugTypeEntry->level != DNONE) {
-			sprintf(debugBuffHeader, "%s (@%s, %s)",
+			sprintf(debugBuffHeader, "%s (%s%s, %s)",
 					debugTypeEntry->typeName.c_str(),
-					debugTypeEntry->kindName.c_str(),
+					targetName.c_str(),
+					passName.c_str(),
 					debugTypeEntry->levelName.c_str());
 		} else {
-			sprintf(debugBuffHeader, "%s (@%s)",
+			sprintf(debugBuffHeader, "%s (%s%s)",
 				debugTypeEntry->typeName.c_str(),
-				debugTypeEntry->kindName.c_str());
+				targetName.c_str(),
+				passName.c_str());
 		}
 		
 		if(firstLine) {

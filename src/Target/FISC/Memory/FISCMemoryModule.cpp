@@ -37,10 +37,12 @@ class MemoryModule : public RunPass {
 #pragma region REGION 1: THE MEMORY CONFIGURATION DATA
 private:
     /* Pass properties */
-    #define MEMORY_MODULE_PRIORITY 1 /* The execution priority of this module */
+    #define MEMORY_MODULE_PRIORITY 2 /* The execution priority of this module */
 
     /* List of permissions for external Passes that want to use the resources of this Pass */
     #define WHITELIST_MEM_MOD {DECL_WHITELIST_ALL(CPUModule)}
+
+    #define MEMORY_MODULE_CPUPOLLRATE_NS 100 /* The rate at which the Memory Module checks if the CPU is still running, in nanoseconds */
 public:
     bool showExecution;
 #pragma endregion
@@ -298,15 +300,53 @@ public:
     
     enum PassRetcode finit()
     {
-        DEBUG(DGOOD, "Terminating Memory");
         return PASS_RET_OK;
     }
 
     enum PassRetcode run()
     {
+        enum PassStatus CPUModulePassStatus = PASS_STATUS_NULL;
+
         /* For now we don't want to keep anything running on this thread.
            We're keeping it relatively simple (for now!!) */
-        return PASS_RET_NOTHINGTODO;
+
+        while (1)
+        {
+            CPUModulePassStatus = getTarget()->getPassStatus(this, "CPUModule");
+
+            if (CPUModulePassStatus == PASS_STATUS_RUNNING             ||
+                CPUModulePassStatus == PASS_STATUS_RUNNINGWITHWARNINGS ||
+                CPUModulePassStatus == PASS_STATUS_RUNNINGWITHERRORS   ||
+                CPUModulePassStatus == PASS_STATUS_PAUSED              ||
+                CPUModulePassStatus == PASS_STATUS_NOTSTARTED)
+            {
+                /* The CPU is running / initializing. Stay idle doing nothing */
+
+#if MEMORY_MODULE_CPUPOLLRATE_NS > 0
+                this_thread::sleep_for(chrono::nanoseconds(MEMORY_MODULE_CPUPOLLRATE_NS));
+#endif
+            }
+            else
+            {
+                if (CPUModulePassStatus == PASS_STATUS_NOAUTH)
+                    return PASS_RET_FATAL; /* The CPU did not give us permission to read its status. Bailing. */
+
+                if(CPUModulePassStatus == PASS_STATUS_COMPLETED)
+                    return PASS_RET_OK; /* The CPU has successfully finished its execution */
+
+                /* At this point, the CPU has finished its execution with errors or warnings.
+                   We're getting outta here now. */
+
+                if (CPUModulePassStatus == PASS_STATUS_COMPLETEDWITHERRORS)
+                    return PASS_RET_ERR;
+
+                if (CPUModulePassStatus == PASS_STATUS_COMPLETEDWITHFATALERRORS)
+                    return PASS_RET_FATAL;
+
+                return PASS_RET_ERR;
+            }
+        }
+        return PASS_RET_ERR;
     }
 
     enum PassRetcode watchdog()

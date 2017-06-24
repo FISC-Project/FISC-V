@@ -9,7 +9,7 @@ enum PassType {
 	PASS_RUNTIME_INIT_FINIT,
 	PASS_CONFIG,
 	PASS_RUNTIME,
-	PASS_COUNT
+	PASS__COUNT
 };
 
 enum PassRetcode {
@@ -18,7 +18,23 @@ enum PassRetcode {
 	PASS_RET_NOTHINGTODO,
 	PASS_RET_ERR,
 	PASS_RET_FATAL,
-	PASS_RET_COUNT
+	PASS_RET__COUNT
+};
+
+enum PassStatus {
+	PASS_STATUS_NULL,
+	PASS_STATUS_NOAUTH,
+	PASS_STATUS_NOTSTARTED,
+	PASS_STATUS_RUNNING,
+	PASS_STATUS_RUNNINGWITHERRORS,
+	PASS_STATUS_RUNNINGWITHWARNINGS,
+	PASS_STATUS_PAUSED,
+	PASS_STATUS_INSIDEEXCEPTION,
+	PASS_STATUS_COMPLETED,
+	PASS_STATUS_COMPLETEDWITHWARNINGS,
+	PASS_STATUS_COMPLETEDWITHERRORS,
+	PASS_STATUS_COMPLETEDWITHFATALERRORS,
+	PASS_STATUS__COUNT,
 };
 
 typedef struct {
@@ -70,6 +86,9 @@ public:
 	bool DEBUG(enum DEBUG_TYPE type, std::string fmt, ...);
 	bool DEBUG(std::string fmt, ...);
 
+	bool setStatus(enum PassStatus newStatus);
+	enum PassStatus getStatus();
+
 	std::vector<std::pair<std::string, std::vector<std::string> > > whitelist;
 	void setWhitelist(std::vector<std::pair<std::string, std::vector<std::string> > > whitelist);
 
@@ -81,6 +100,7 @@ private:
 
 	TargetRegistry * parentTarget;
 	std::vector<passResource_t> resourceList;
+	enum PassStatus status;
 	bool isTargetSet;
 	bool resourcesLocked;
 };

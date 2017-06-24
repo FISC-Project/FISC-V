@@ -35,6 +35,9 @@ static bool instruction_list_success_declared = true;
 
 class CPUConfigurator : public ConfigPass {
 private:
+    /* Pass properties */
+    #define CPU_CONFIGURATOR_PRIORITY 3 /* The execution priority of this module */
+
     #define DEFAULT_ALIGN_BASE   (0) /* Base   address alignment is disabled by default */
     #define DEFAULT_ALIGN_OFFSET (0) /* Offset address alignment is disabled by default */
 
@@ -59,7 +62,7 @@ public:
     uint64_t pfla;    /* Page Fault Linear Address                                        */
     
 public:
-    CPUConfigurator() : ConfigPass(2) 
+    CPUConfigurator() : ConfigPass(CPU_CONFIGURATOR_PRIORITY)
     {
         setWhitelist(WHITELIST_CPU_CONF);
     }
@@ -67,7 +70,7 @@ public:
     enum PassRetcode init()
     {
         enum PassRetcode success = PASS_RET_OK;
-        DEBUG(DGOOD, "Initializing CPU");
+        DEBUG(DINFO, "Initializing CPU");
 
         /* "Install" all statically declared instructions into a nice safe vector */
         
@@ -83,7 +86,7 @@ public:
             }
 
             if (success == PASS_RET_OK) {
-                DEBUG(DGOOD, "CPU supports %d unique instructions", instruction_list_size);
+                DEBUG(DINFO, "CPU supports %d unique instructions", instruction_list_size);
 
                 /* Clear flags */
                 cpsr.n = cpsr.z = cpsr.v = cpsr.c = 0;

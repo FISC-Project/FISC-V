@@ -890,9 +890,9 @@ void CPUModule::dumpInternals()
     }
 }
 
-CPUModule::CPUModule() : RunPass(2)
+CPUModule::CPUModule() : RunPass(CPU_MODULE_PRIORITY)
 {
-        
+
 }
 
 enum PassRetcode CPUModule::init()
@@ -942,13 +942,13 @@ enum PassRetcode CPUModule::init()
 
 enum PassRetcode CPUModule::finit()
 {
-    DEBUG(DGOOD, "Terminating CPU");
+    /* TODO */
     return PASS_RET_OK;
 }
 
 enum PassRetcode CPUModule::run()
 {
-    DEBUG(DGOOD,"EXECUTING CPU (mode: %s)...%s", getCurrentCPUModeStr().c_str(), memory->showExecution ? "\n" : "");
+    DEBUG(DGOOD," -- EXECUTING CPU (mode: %s) --%s", getCurrentCPUModeStr().c_str(), memory->showExecution ? "\n" : "");
     
     /* 
     -- CPU ALGORITHM --
@@ -1046,7 +1046,7 @@ enum PassRetcode CPUModule::run()
 
     if(memory->showExecution)
         DEBUG(DNORMALH, "\n");
-    DEBUG(successfulExecution ? DGOOD : DERROR, "DONE EXECUTING (%d instructions executed)", instructionsExecuted - 1);
+    DEBUG(successfulExecution ? DGOOD : DERROR, " -- DONE EXECUTING (%d instructions executed) --", instructionsExecuted - 1);
 
     dumpInternals();
 

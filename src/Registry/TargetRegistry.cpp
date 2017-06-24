@@ -1,10 +1,15 @@
 #include <fvm/TargetRegistry.h>
 #include <fvm/Pass.h>
 
-TargetRegistry::TargetRegistry(std::string targetName, std::vector<Pass*> passList)
+TargetRegistry::TargetRegistry(std::string targetName,
+	                           std::string targetNameLong, 
+			                   std::string targetOwnerDescription, 
+			               	   std::vector<Pass*> passList)
 : runContext(this)
 {
 	this->targetName = targetName;
+	this->targetNameLong = targetNameLong;
+	this->targetOwnerDescription = targetOwnerDescription;
 	TargetRegistry::TheTargetList.push_back(this);
 	for (auto pass : passList)
 		TargetRegistry::passList.push_back(pass);
@@ -38,4 +43,20 @@ Pass * TargetRegistry::getPass(Pass * passID, unsigned int passIndex)
 	}
 	/* Pass not found */
 	return nullptr;
+}
+
+enum PassStatus TargetRegistry::getPassStatus(Pass * passID, std::string passName)
+{
+	Pass * pass = getPass(passID, passName);
+	if(pass == nullptr) /* It's possible the pass doesn't exist. We assume NOAUTH regardless */
+		return PASS_STATUS_NOAUTH;
+	return pass->getStatus();
+}
+
+enum PassStatus TargetRegistry::getPassStatus(Pass * passID, unsigned int passIndex)
+{
+	Pass * pass = getPass(passID, passIndex);
+	if (pass == nullptr) /* It's possible the pass doesn't exist. We assume NOAUTH regardless */
+		return PASS_STATUS_NOAUTH;
+	return pass->getStatus();
 }

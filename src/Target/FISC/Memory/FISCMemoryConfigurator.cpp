@@ -39,7 +39,7 @@ class MemoryConfigurator : public ConfigPass {
 #pragma region REGION 1: THE MEMORY CONFIGURATION DATA
 public:
     /* Pass properties */
-    #define MEMORY_CONFIGURATOR_PRIORITY 1 /* The execution priority of this module */
+    #define MEMORY_CONFIGURATOR_PRIORITY 2 /* The execution priority of this module */
     #define MEMORY_PROGRAM_FILE_IOS_MODE std::ios::in | std::ios::binary /* The mode the program file will be opened with */
 
     /* List of permissions for external Passes that want to use the resources of this Pass */
@@ -94,7 +94,6 @@ public:
     enum PassRetcode init()
     {
         enum PassRetcode success = PASS_RET_ERR;
-        DEBUG(DGOOD, "Initializating Memory");
 
         /* Setup program file */
         if (cmdHasOpt(MEMORY_FLAG_BOOT_SHORT)) {
@@ -125,9 +124,6 @@ public:
            will not be able to continue, thus forcing every other
            single module (on this target only) to cancel its current
            operations. */
-
-        if (success == PASS_RET_ERR)
-            DEBUG(DERROR, "Could not initialize the Memory Configurator Pass!");
 
         return success;
     }
