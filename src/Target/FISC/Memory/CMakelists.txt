@@ -1,1 +1,3 @@
-add_library(FVMFISCPassMemory FISCMemoryModule.cpp FISCMemoryConfigurator.cpp FISCMemoryDebugger.cpp)
+add_library(FVMFISCPassMemory FISCMemoryModule.hpp FISCMemoryConfigurator.hpp FISCMemoryDebugger.hpp)
+
+set_target_properties(FVMFISCPassMemory PROPERTIES LINKER_LANGUAGE CXX)

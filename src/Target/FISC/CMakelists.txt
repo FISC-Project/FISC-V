@@ -1,5 +1,35 @@
+#########################################################################
+############################ TARGET SPECIFIC ############################
+#########################################################################
+
 add_subdirectory(Error)
 add_subdirectory(InitFinit)
 add_subdirectory(IO)
 add_subdirectory(Memory)
 add_subdirectory(CPU)
+
+add_library(FVMFISCTargetRegistry FISCTargetRegistry.hpp)
+
+set_target_properties(FVMFISCTargetRegistry PROPERTIES LINKER_LANGUAGE CXX)
+
+add_dependencies(fvm
+    FVMFISCPassError
+    FVMFISCPassInitFinit
+    FVMFISCPassIO
+    FVMFISCPassMemory
+    FVMFISCPassCPU
+)
+
+set_target_properties(
+    FVMFISCPassError
+    FVMFISCPassInitFinit
+    FVMFISCPassIO
+    FVMFISCPassMemory
+    FVMFISCPassCPU
+
+    PROPERTIES FOLDER "Machine Targets"
+)
+
+#########################################################################
+#########################################################################
+#########################################################################

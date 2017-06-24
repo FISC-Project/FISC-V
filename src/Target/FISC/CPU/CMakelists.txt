@@ -1,2 +1,5 @@
-file(GLOB_RECURSE SourceFiles *.cpp *.h)
+file(GLOB_RECURSE SourceFiles *.cpp *.hpp *.h)
+
 add_library(FVMFISCPassCPU ${SourceFiles})
+
+set_target_properties(FVMFISCPassCPU PROPERTIES LINKER_LANGUAGE CXX)

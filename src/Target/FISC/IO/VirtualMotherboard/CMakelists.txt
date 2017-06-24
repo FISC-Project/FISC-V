@@ -1,0 +1,7 @@
+add_subdirectory(Communication)
+
+set_target_properties(
+	FVMFISCIOMach-Comms-VMConsole
+
+    PROPERTIES FOLDER "Machine Target - FISC - VirtualMotherboard"
+)
