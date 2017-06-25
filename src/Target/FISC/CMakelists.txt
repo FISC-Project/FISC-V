@@ -13,6 +13,7 @@ add_library(FVMFISCTargetRegistry FISCTargetRegistry.hpp)
 set_target_properties(FVMFISCTargetRegistry PROPERTIES LINKER_LANGUAGE CXX)
 
 add_dependencies(fvm
+    FVMFISCTargetRegistry
     FVMFISCPassError
     FVMFISCPassInitFinit
     FVMFISCPassIO
@@ -21,6 +22,7 @@ add_dependencies(fvm
 )
 
 set_target_properties(
+    FVMFISCTargetRegistry
     FVMFISCPassError
     FVMFISCPassInitFinit
     FVMFISCPassIO

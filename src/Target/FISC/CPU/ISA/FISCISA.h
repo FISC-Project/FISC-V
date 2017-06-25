@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <fvm/Utils/Bit.h>
+#include <fvm/Utils/String.h>
+#include <fvm/Debug/Debug.h>
 
 namespace FISC {
 
@@ -357,7 +359,7 @@ public:
 			if (instruction_list_realloc[i]->opcodeShifted == this->opcodeShifted)
 			{
 				/* Oh no, there is a conflict between instructions */
-				PRINTC(DERROR, "FATAL ERROR: The instruction %s (opcode 0x%X) is in conflict with instruction %s (opcode 0x%X)", 
+				debug::DEBUG(DERROR, "FATAL ERROR: The instruction %s (opcode 0x%X) is in conflict with instruction %s (opcode 0x%X)", 
 					this->opcodeStr.c_str(), this->opcode,
 					instruction_list_realloc[i]->opcodeStr.c_str(), instruction_list_realloc[i]->opcode);
 				free(instruction_list_realloc);

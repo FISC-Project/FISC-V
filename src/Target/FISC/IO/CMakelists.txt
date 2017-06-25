@@ -1,5 +1,5 @@
 add_subdirectory(VirtualMotherboard)
 
-add_library(FVMFISCPassIO FISCIOMachineModule.hpp FISCIOMachineConfigurator.hpp FISCIOMachineDebugger.hpp VirtualMotherboard/VMobo.hpp VirtualMotherboard/MoboDevice.h)
+add_library(FVMFISCPassIO FISCIOMachineModule.hpp FISCIOMachineConfigurator.hpp FISCIOMachineDebugger.hpp VirtualMotherboard/VMoboInc.hpp VirtualMotherboard/MoboDevice.h)
 
 set_target_properties(FVMFISCPassIO PROPERTIES LINKER_LANGUAGE CXX)

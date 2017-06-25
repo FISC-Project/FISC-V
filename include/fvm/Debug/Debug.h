@@ -67,9 +67,9 @@ extern bool DEBUG(std::string kindName, enum DEBUG_TYPE type, bool override_flag
 extern bool DEBUG(std::string kindName, enum DEBUG_TYPE type, std::string fmt, ...);
 extern bool DEBUG(enum DEBUG_TYPE type, std::string fmt, ...);
 extern bool DEBUG(std::string fmt, ...);
-}
 
 #define PRINT(fmt, ...) DEBUG(DVM, DNORMAL, true, fmt, __VA_ARGS__)
 #define PRINTC(type, fmt, ...) DEBUG(DVM, type, true, fmt, __VA_ARGS__)
+}
 
 #endif

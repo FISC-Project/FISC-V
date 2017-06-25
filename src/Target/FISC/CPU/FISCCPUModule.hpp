@@ -38,7 +38,7 @@ uint64_t CPUModule::readRegister(unsigned registerIndex)
     The CPU would have triple faulted long before then. */
 
     if(bank == FISC_CPU_MODE_KERNEL || bank == FISC_CPU_MODE_USER || registerIndex == XZR) {
-        /* We're setting the bank to kernel for no particular reason. 
+        /* We're setting the bank to kernel for no particular reason.
            The goal is to have both kernel and user modes to share the same bank.
            Also, if we're reading from XZR, we don't care if the registers are banked, so
            we set the bank value anyways for that case. */
