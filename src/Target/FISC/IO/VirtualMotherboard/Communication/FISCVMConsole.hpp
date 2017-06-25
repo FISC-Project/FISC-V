@@ -10,7 +10,7 @@
 #include <fvm/Debug/Debug.h>
 
 /* Define the size of the address space for this device (in bytes) */
-#define IO_VMCONSOLE_BANDWIDTH (2) /* 2 bytes are enough. 1 for writing serially and another for reading searially */
+#define IO_VMCONSOLE_BANDWIDTH (2) /* 2 bytes are enough. 1 for writing serially and another for reading serially */
 
 class VMConsole : public Device {
 public:

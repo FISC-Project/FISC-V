@@ -115,6 +115,10 @@ void putc(char ch)
 	*((char*)IOSPACE_VMCONSOLE_OUT) = (char)ch;
 }
 
-#define puts(str) do { static char str_[] __data = str; for(int i = 0; i < strlen(str_); i++) putc(str_[i]); } while(0)
+void puts(char * str)
+{
+	for(size_t i = 0; i < strlen(str); i++)
+		putc(str[i]);
+}
 
 #endif

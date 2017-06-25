@@ -163,11 +163,11 @@ enum PassRetcode IOMachineModule::run()
     for (auto & dev : ioconf->device_list) {
         /* First, create an execution context */
         dev->runCmd.theRunningDevice = dev;
-        dev->runCmd.retval = DEV_RET_NULL; /* If this stays null then we were unable to launch the runtime pass */
+        dev->runCmd.retval = DEV_RET_NULL; /* If this stays null then we were unable to launch the device's run method */
         dev->runCmd.hasReturned = false;
         dev->alreadyJoined = false;
 
-        /* Finally launch the target's implementation */
+        /* Finally launch the device execution thread */
         DEBUG(DGOOD, "Launching IO device: %s", dev->deviceName.c_str());
 
         dev->runThread = std::unique_ptr<thread>(new thread(iodevRunLauncher, (void*)&dev->runCmd));

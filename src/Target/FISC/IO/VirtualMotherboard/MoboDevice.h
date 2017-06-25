@@ -72,6 +72,8 @@ private:
 	friend class IOMachineConfigurator;
 
 public:
+	/* Run needs to be public because it is called by a global static function
+	   and it needs access to this method. */
 	virtual enum DevRetcode run(runDevLaunchCommandPacket_t * runCmd) = 0;
 
 	/* These are public methods called by other passes */
