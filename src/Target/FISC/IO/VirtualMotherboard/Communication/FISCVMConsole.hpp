@@ -7,6 +7,10 @@
 
 #pragma once
 #include "../MoboDevice.h"
+#include <fvm/Debug/Debug.h>
+
+/* Define the size of the address space for this device (in bytes) */
+#define IO_VMCONSOLE_BANDWIDTH (2) /* 2 bytes are enough. 1 for writing serially and another for reading searially */
 
 class VMConsole : public Device {
 public:
@@ -25,9 +29,9 @@ public:
 		return DEV_RET_OK;
 	}
 
-	enum DevRetcode run()
+	enum DevRetcode run(runDevLaunchCommandPacket_t * runCmd)
 	{
-		/* Nothing to run */
+		while (IS_IO_LIVE()); /* Stay idle while the IO Module is live */	
 		return DEV_RET_OK;
 	}
 
@@ -37,19 +41,22 @@ public:
 		return DEV_RET_OK;
 	}
 
-	enum DevRetcode read()
+	enum DevRetcode read(uint32_t address, enum FISC_DATATYPE dataType, bool debug)
 	{
-		/* TODO: The main memory calls this */
+		
 		return DEV_RET_OK;
 	}
 
-	enum DevRetcode write()
+	enum DevRetcode write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool debug)
 	{
-		/* TODO: The main memory calls this */
+		/* This device expects to receive 1 single byte at address 0 */
+		char fmt[2];
+		sprintf(fmt, "%c", (char)(data & 0xFF));
+		raw_print(fmt, nullptr, false);
 		return DEV_RET_OK;
 	}
 
-	enum DevRetcode ioctl()
+	enum DevRetcode ioctl(void * ioctlPacket)
 	{
 		/* Nothing to control */
 		return DEV_RET_OK;
@@ -62,4 +69,4 @@ public:
 };
 
 /* Register / instantiate device */
-NEW_DEVICE(FISC, VMConsole);
+NEW_DEVICE(FISC, VMConsole, IO_VMCONSOLE_BANDWIDTH);

@@ -142,7 +142,7 @@ static bool raw_print(std::string str, debugTypeEntry_t * debugTypeEntry, bool i
 
 #include <fvm/Host/Windows/WindowsAPI.h>
 
-static bool raw_print(std::string str, debugTypeEntry_t * debugTypeEntry, bool isMsgHeader)
+bool raw_print(std::string str, debugTypeEntry_t * debugTypeEntry, bool isMsgHeader)
 {
 	WORD colorAttribute = winapi_console_getDefaultAttr();
 	BOOL success = FALSE;

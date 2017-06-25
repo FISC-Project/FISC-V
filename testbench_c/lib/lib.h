@@ -96,7 +96,6 @@ void * memset(void * dst, int32_t val, size_t len)
 /************************************************/
 /******************** STRING ********************/
 /************************************************/
-
 size_t strlen(string str)
 {
 	size_t size = 0;
@@ -104,5 +103,18 @@ size_t strlen(string str)
 		size++;
 	return size;
 }
+
+/************************************************/
+/******************* IOSTREAM *******************/
+/************************************************/
+#define IOSPACE_VMCONSOLE_OUT 0x5000
+#define IOSPACE_VMCONSOLE_IN  0x5001
+
+void putc(char ch)
+{
+	*((char*)IOSPACE_VMCONSOLE_OUT) = (char)ch;
+}
+
+#define puts(str) do { static char str_[] __data = str; for(int i = 0; i < strlen(str_); i++) putc(str_[i]); } while(0)
 
 #endif

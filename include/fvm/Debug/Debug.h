@@ -56,6 +56,8 @@ extern bool setNewDebugType(debugTypeEntry_t newDebugTypeEntry);
 extern bool setNewDefaultDebugType(enum DEBUG_KIND kind, std::string kindName, TargetRegistry * targetOwner);
 extern void debugEnableDisableColor(bool enable);
 
+extern bool raw_print(std::string str, debugTypeEntry_t * debugTypeEntry, bool isMsgHeader);
+
 namespace debug {
 extern bool changeDebugLevel(std::string kindName, enum DEBUG_TYPE type, enum DEBUG_LEVEL newLevel);
 extern bool changeDebugLevel(std::string kindName, enum DEBUG_LEVEL newLevel);

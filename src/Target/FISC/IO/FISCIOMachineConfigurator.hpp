@@ -11,10 +11,13 @@
 
 namespace FISC {
 
-#include "VirtualMotherboard/MoboDevice.h"
+/* Forward decl */
+class Device;
 
 static Device ** device_list_realloc = nullptr;
 static unsigned int device_list_size = 0;
+
+#include "VirtualMotherboard/MoboDevice.h"
 
 class IOMachineConfigurator : public ConfigPass {
 #pragma region REGION 1: THE IO MACHINE CONFIGURATION DATA
@@ -23,24 +26,37 @@ public:
     #define IOMACH_CONFIGURATOR_PRIORITY 1 /* The execution priority of this module */
 
     /* List of permissions for external Passes that want to use the resources of this Pass */
-    #define WHITELIST_IOMACH_CONFIG {DECL_WHITELIST_ALL(IOMachineModule)}
+    #define WHITELIST_IOMACH_CONFIG {DECL_WHITELIST_ALL(IOMachineModule) DECL_WHITELIST_ALL(MemoryModule)}
+
+    /* IO Controller properties */
+    #define IOMEMLOC (0x5000) /* The starting offset of the IO Address Space (byte aligned) */
 #pragma endregion
 
 #pragma region REGION 2: THE IO MACHINE STRUCTURE DEFINITION (IMPL. SPECIFIC)
 public:
     std::vector<Device*> device_list;
-
+    uint32_t ioSpaceSize; /* Size of IO Address space in bytes */
 #pragma endregion
 
 #pragma region REGION 3: THE IO MACHINE CONFIGURATION IMPLEMENTATION (IMPL SPECIFIC)
 public:
-
+    Device * isAddressIO(uint32_t physAddress)
+    {
+        uint32_t addrAccum = IOMEMLOC;
+        for (auto & dev : device_list) {
+            if(physAddress >= addrAccum && physAddress < (addrAccum + dev->addressSpaceSize))
+                return dev;
+            addrAccum += dev->addressSpaceSize;
+        }
+        return nullptr;
+    }
 #pragma endregion
 
 #pragma region REGION 4: THE IO MACHINE CONFIGURATION IMPLEMENTATION (GENERIC VM FUNCTIONS)
 public:
 
-    IOMachineConfigurator() : ConfigPass(IOMACH_CONFIGURATOR_PRIORITY)
+    IOMachineConfigurator() : ConfigPass(IOMACH_CONFIGURATOR_PRIORITY),
+    ioSpaceSize(0)
     {
         setWhitelist(WHITELIST_IOMACH_CONFIG);
     }
@@ -59,13 +75,19 @@ public:
                     break;
                 }
                 device_list_realloc[i]->targetName = getTarget()->targetName;
+                ioSpaceSize += device_list_realloc[i]->addressSpaceSize;
                 device_list.push_back(device_list_realloc[i]);
             }
 
             if (success == PASS_RET_OK) {
                 /* We shall continue initialization */
+                DEBUG(DINFO, " -- IO information --");
                 DEBUG(DINFO, "Found %d IO devices", device_list_size);
-                
+                DEBUG(DINFO, "IO address space starts at address 0x%I64x", (uint64_t)IOMEMLOC);
+                DEBUG(DINFO, "IO address space size: %d bytes", ioSpaceSize);
+                DEBUG(DINFO, "Address space range: 0x%I64x .. 0x%I64x", (uint64_t)IOMEMLOC, (uint64_t)(IOMEMLOC + ioSpaceSize));
+                DEBUG(DINFO, " -- IO information -- End");
+
                 /* Cleanup the unsafe instruction list now */
                 free(device_list_realloc);
 
@@ -104,8 +126,5 @@ public:
     }
 #pragma endregion
 };
-
-/* Include all of the IO Devices into the system */
-#include "VirtualMotherboard/VMoboInc.hpp"
 
 }

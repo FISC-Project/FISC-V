@@ -1,7 +1,5 @@
 #include "lib/lib.h"
 
-char str[] = "Test String";
-
 void start()
 {
 	int arraysize = 5;
@@ -15,9 +13,8 @@ void start()
 	int * ptr2 = (int*)malloc(sizeof(int) * arraysize);
 	memcpy(ptr2, ptr1, sizeof(int) * arraysize);
 
-	/* Show str contents */
-	DEBUGLIST(strlen(str), str);
-
 	/* Show ptr2 contents */
-	DEBUGLISTOFF(strlen(str), arraysize, ptr2);
+	DEBUGLIST(arraysize, ptr2);
+
+	puts("\nHello World\n");
 }

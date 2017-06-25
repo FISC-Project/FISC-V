@@ -1,3 +1,3 @@
-add_library(FVMFISCIOMach-Comms-VMConsole FISCVMConsole.hpp ../MoboDevice.h)
+add_library(FVMFISCIOMach-Comms-VMConsole FISCVMConsole.hpp ../MoboDevice.h ../../FISCIOMachineModule.h)
 
 set_target_properties(FVMFISCIOMach-Comms-VMConsole PROPERTIES LINKER_LANGUAGE CXX)

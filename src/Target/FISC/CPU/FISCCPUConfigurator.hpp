@@ -43,7 +43,6 @@ private:
 
     /* List of permissions for external Passes that want to use the resources of this Pass */
     #define WHITELIST_CPU_CONF {DECL_WHITELIST_ALL(CPUModule)}
-
 public:
     std::map<uint16_t, Instruction*> instruction_list;
 

@@ -29,6 +29,7 @@
 #include <fvm/Utils/Bit.h>
 #include <fvm/TargetRegistry.h>
 #include "FISCMemoryConfigurator.hpp"
+#include "../IO/FISCIOMachineConfigurator.hpp"
 #include "../CPU/ISA/FISCISA.h"
 
 namespace FISC {
@@ -51,6 +52,7 @@ public:
 private:
     /* External Pass handles */
     MemoryConfigurator * mconf;
+    IOMachineConfigurator * ioconf;
 #pragma endregion
 
 #pragma region REGION 3: THE MEMORY BEHAVIOUR (IMPL. SPECIFIC)
@@ -69,6 +71,15 @@ public:
         /* Check if address is valid */
         if(!isAddressValid(address, dataType))
             return (uint64_t)-1;
+
+        /* Check if this address falls inside IO Space */
+        Device * dev;
+        if ((dev = ioconf->isAddressIO(address)) != nullptr) {
+            /* Redirect the read request into the IO Controller */
+            if (debug && showExecution)
+                DEBUG(DNORMALH, ": @IODEV)");
+            return dev->read(address - IOMEMLOC, dataType, debug);
+        }
 
         /* Fetch the memory */
         uint64_t memVal = (uint64_t)-1;
@@ -140,6 +151,15 @@ public:
         /* Check if address is valid */
         if(!isAddressValid(address, dataType))
             return false;
+
+        /* Check if this address falls inside IO Space */
+        Device * dev;
+        if ((dev = ioconf->isAddressIO(address)) != nullptr) {
+            /* Redirect the read request into the IO Controller */
+            if (debug && showExecution)
+                DEBUG(DNORMALH, ": @IODEV)");
+            return dev->write(data, address - IOMEMLOC, dataType, debug) == DEV_RET_OK;
+        }
         
         /* Write to memory */
         switch (dataType) {
@@ -284,6 +304,14 @@ public:
             /* We were unable to find a MemoryConfigurator pass!
                We cannot continue the execution of this pass */
             DEBUG(DERROR, "Could not fetch the Memory Configurator Pass!");
+            success = PASS_RET_ERR;
+        }
+
+        /* Fetch IO Machine Configurator Pass */
+        if (!(ioconf = GET_PASS(IOMachineConfigurator))) {
+            /* We were unable to find a IOMachineConfigurator pass!
+               We cannot continue the execution of this pass */
+            DEBUG(DERROR, "Could not fetch the IO Machine Configurator Pass!");
             success = PASS_RET_ERR;
         }
 
