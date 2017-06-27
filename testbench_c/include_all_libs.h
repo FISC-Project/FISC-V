@@ -1,0 +1,6 @@
+#include "lib/attr.h"
+#include "lib/stdarg.h"
+#include "lib/stdint.h"
+#include "lib/stdio.h"
+#include "lib/stdlib.h"
+#include "lib/string.h"

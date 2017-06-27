@@ -28,3 +28,9 @@
 /testbench_rust/tools/llvm-mc.exe
 /testbench_rust/tools/llvm-link.exe
 /testbench_rust/tools/llc.exe
+/toolchain/Windows/Tools/llvm-objdump.exe
+/toolchain/Windows/Tools/llvm-mc.exe
+/toolchain/Windows/Tools/llvm-link.exe
+/toolchain/Windows/Tools/llc.exe
+/toolchain/Windows/Tools/flasm.exe
+/toolchain/Windows/Tools/clang.exe

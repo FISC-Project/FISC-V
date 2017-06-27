@@ -1,7 +1,9 @@
 add_subdirectory(Communication)
+add_subdirectory(Time)
 
 set_target_properties(
-	FVMFISCIOMach-Comms-VMConsole
+    FVMFISCIOMach-Comms-VMConsole
+    FVMFISCIOMach-Timer
 
     PROPERTIES FOLDER "Machine Target - FISC - VirtualMotherboard"
 )

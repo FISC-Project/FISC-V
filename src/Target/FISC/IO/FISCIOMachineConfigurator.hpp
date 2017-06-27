@@ -85,7 +85,7 @@ public:
                 DEBUG(DINFO, "Found %d IO devices", device_list_size);
                 DEBUG(DINFO, "IO address space starts at address 0x%I64x", (uint64_t)IOMEMLOC);
                 DEBUG(DINFO, "IO address space size: %d bytes", ioSpaceSize);
-                DEBUG(DINFO, "Address space range: 0x%I64x .. 0x%I64x", (uint64_t)IOMEMLOC, (uint64_t)(IOMEMLOC + ioSpaceSize));
+                DEBUG(DINFO, "Address space range: 0x%I64x .. 0x%I64x", (uint64_t)IOMEMLOC, (uint64_t)(IOMEMLOC + (ioSpaceSize - 1)));
                 DEBUG(DINFO, " -- IO information -- End");
 
                 /* Cleanup the unsafe instruction list now */

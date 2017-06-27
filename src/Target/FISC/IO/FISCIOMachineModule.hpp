@@ -22,8 +22,8 @@ static mutex glob_iomodule_mutex;
 static void iodevRunLauncher(void * runArgs)
 {
     runDevLaunchCommandPacket_t * runCmd = (runDevLaunchCommandPacket_t*)runArgs;
-    if (runCmd && runCmd->theRunningDevice) {
 
+    if (runCmd && runCmd->theRunningDevice) {
         runCmd->retval = runCmd->theRunningDevice->run(runCmd);
         runCmd->hasReturned = true;
     }

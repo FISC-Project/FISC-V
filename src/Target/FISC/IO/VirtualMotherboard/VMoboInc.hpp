@@ -10,3 +10,4 @@
 		Uses the Virtual Machine's console output as a standard serial communication terminal		
 */
 #include "Communication/FISCVMConsole.hpp"
+#include "Time/FISCTimerModule.hpp"

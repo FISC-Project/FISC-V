@@ -23,6 +23,7 @@ static void runErrorDebug(std::string errorMessage, TargetRegistry * theTarget, 
 static void runtimeLauncher(void * runtimeThreadArgs)
 {
     runtimeLaunchCommandPacket_t * runCmd = (runtimeLaunchCommandPacket_t*)runtimeThreadArgs;
+    
     if(runCmd && runCmd->theRuntimePass) {
         runCmd->retval = runCmd->theRuntimePass->run();
         runCmd->hasReturned = true;
