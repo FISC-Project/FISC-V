@@ -1,20 +1,54 @@
 #ifndef STDIO_H_
 #define STDIO_H_
 
+#include "iospace.h"
 #include "string.h"
+#include "stdint.h"
+#include "attr.h"
 
-#define IOSPACE_VMCONSOLE_OUT 0x5000
-#define IOSPACE_VMCONSOLE_IN  0x5001
+static bool stdout_async __data = false;
+
+/**********************/
+/******* OUTPUT *******/
+/**********************/
+void wait_stdout_flush()
+{
+	while(!io->VMConsole.wrRdy);
+}
 
 void putc(char ch)
 {
-	*((char*)IOSPACE_VMCONSOLE_OUT) = (char)ch;
+	/* Send byte to virtual console */
+	io->VMConsole.wr = ch;
+	/* Wait for the text to be flushed (if async enabled) */
+	if(!stdout_async)
+		wait_stdout_flush();
 }
 
 void puts(char * str)
 {
+	/* Send full string to virtual console */
 	for(size_t i = 0; i < strlen(str); i++)
 		putc(str[i]);
+}
+
+/*********************/
+/******* INPUT *******/
+/*********************/
+bool kbhit()
+{
+	return io->VMConsole.rdRdy;
+}
+
+char getch()
+{
+	while(!kbhit());
+	return io->VMConsole.rd;
+}
+
+char getch_async()
+{
+	return io->VMConsole.rd;
 }
 
 #define DEBUGLOC 0x10000

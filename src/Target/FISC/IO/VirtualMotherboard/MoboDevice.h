@@ -42,7 +42,7 @@ typedef struct {
 class Device {
 public:
 	Device(std::string deviceName, const uint32_t addressSpaceSize)
-	: addressSpaceSize(addressSpaceSize), uniqueID(device_list_size)
+	: addressSpaceSize(addressSpaceSize), uniqueID(device_list_size), isDeviceEnabled(false)
 	{
 		this->deviceName = deviceName;
 		initialized = true;
@@ -77,12 +77,13 @@ public:
 	virtual enum DevRetcode run(runDevLaunchCommandPacket_t * runCmd) = 0;
 
 	/* These are public methods called by other passes */
-	virtual enum DevRetcode read(uint32_t address, enum FISC_DATATYPE dataType, bool debug) = 0;
+	virtual enum DevRetcode read(uint64_t & outData, uint32_t address, enum FISC_DATATYPE dataType, bool debug) = 0;
 	virtual enum DevRetcode write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool debug) = 0;
 	virtual enum DevRetcode ioctl(void * ioctlPacket) = 0;
 
 	std::string deviceName;
 	std::string targetName;
+	bool isDeviceEnabled;
 
 	IOMachineModule * ioContext;
 	#define IS_IO_LIVE() ioContext->isLive()

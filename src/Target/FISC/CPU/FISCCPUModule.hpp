@@ -731,7 +731,7 @@ void CPUModule::dumpInternals()
 
     for(unsigned i = 0; cmdHasOpt("dump", i); i++) {
         if ((dumpWhat = strTolower(cmdQuery("dump", i).second)) == NULLSTR) {
-            DEBUG(DWARN, "--debug flag with no argument. Possible options: reg | mem.startaddr.<.endaddr|.datawidth|.endaddr.datawidth> (ex: mem.0..10.43)");
+            DEBUG(DWARN, "--dump flag with no argument. Possible options: reg | mem.startaddr.<.endaddr|.datawidth|.endaddr.datawidth> (ex: mem.0..10.32)");
             continue;
         }
         else {
@@ -1033,6 +1033,12 @@ enum PassRetcode CPUModule::run()
                 }
             }
         }
+
+
+        /*********** T O D O *********/
+        if(generatedExternalInterrupt)
+            printf("\nGenerated interrupt");
+        /*********** T O D O *********/
 
         /* Now increment the Program Counter value (always aligned by 4 bytes / 32 bits, with or without the AE flag enabled) */
         if(!isBranching && !generatedException && !generatedExternalException && !generatedExternalInterrupt && !generatedInterrupt)

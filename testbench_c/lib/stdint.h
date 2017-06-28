@@ -29,6 +29,8 @@ typedef unsigned  int  uint_fast32_t;
 typedef long long  int_fast64_t;
 typedef unsigned long long   uint_fast64_t;
 
+typedef char bool;
+
 typedef long long intmax_t;
 typedef unsigned long long uintmax_t;
 
@@ -145,5 +147,10 @@ object pointers */
 
 #define nullptr ((void*)0)
 #define NULL ((void *)0)
+
+#define false ((bool)(0))
+#define true  ((bool)(1))
+#define FALSE ((bool)(0))
+#define TRUE  ((bool)(1))
 
 #endif

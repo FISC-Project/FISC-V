@@ -43,7 +43,7 @@ private:
     /* List of permissions for external Passes that want to use the resources of this Pass */
     #define WHITELIST_MEM_MOD {DECL_WHITELIST_ALL(CPUModule)}
 
-    #define MEMORY_MODULE_CPUPOLLRATE_NS 100 /* The rate at which the Memory Module checks if the CPU is still running, in nanoseconds */
+    #define MEMORY_MODULE_CPUPOLLRATE_NS 0 /* The rate at which the Memory Module checks if the CPU is still running, in nanoseconds */
 public:
     bool showExecution;
 #pragma endregion
@@ -78,7 +78,14 @@ public:
             /* Redirect the read request into the IO Controller */
             if (debug && showExecution)
                 DEBUG(DNORMALH, ": @IODEV)");
-            return dev->read(address - IOMEMLOC, dataType, debug);
+            
+            uint64_t ioval = (uint64_t)-1;
+            enum DevRetcode ioret = DEV_RET_ERROR;
+            if ((ioret = dev->read(ioval, address - IOMEMLOC - ioconf->getDeviceOffset(dev), dataType, debug)) != DEV_RET_OK) {
+                DEBUG(DERROR, "Could not read from IO device at target %s@%s@%s@%s. Retval: %d", getTarget()->targetName.c_str(), passName.c_str(), dev->deviceName.c_str(), __func__, ioret);
+                return (uint64_t)-1;
+            }
+            return ioval;
         }
 
         /* Fetch the memory */
@@ -158,7 +165,15 @@ public:
             /* Redirect the read request into the IO Controller */
             if (debug && showExecution)
                 DEBUG(DNORMALH, ": @IODEV)");
-            return dev->write(data, address - IOMEMLOC, dataType, debug) == DEV_RET_OK;
+            
+            enum DevRetcode ioret = DEV_RET_ERROR;
+            if ((ioret = dev->write(data, address - IOMEMLOC - ioconf->getDeviceOffset(dev), dataType, debug)) != DEV_RET_OK) {
+                DEBUG(DERROR, "Could not write to IO device at target %s@%s@%s@%s. Retval: %d", getTarget()->targetName.c_str(), passName.c_str(), dev->deviceName.c_str(), __func__, ioret);
+                return false;
+            }
+            else {
+                return true;
+            }
         }
         
         /* Write to memory */

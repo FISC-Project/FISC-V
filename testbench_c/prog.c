@@ -1,4 +1,5 @@
 #include "include_all_libs.h"
+#include "lib/fisc_system.h"
 #include "intro.h"
 
 static void print_dec(unsigned int value, unsigned int width, char * buf, int * ptr)
@@ -125,10 +126,18 @@ int sprintf(char * buf, const char *fmt, ...) {
 void start()
 {	
 	welcome();
+	puts("\nPress the 'q' key to quit\n");
 
 	static char buff[10] __data;
 	FIXSTACK;
 	sprintf(buff, "Text: %s", "formatted");
+	
+	while(1) {
+		char ch = getch();
+		if(ch == 'q')
+			break;
+		putc(ch);
+	}
 
 	goodbye();
 }
