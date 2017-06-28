@@ -726,7 +726,7 @@ void CPUModule::dumpWarning(std::string problematicArg, std::string fullArg)
 void CPUModule::dumpInternals()
 {
     if (!cmdHasOpt("dump")) return;
-
+  
     std::string dumpWhat;
 
     for(unsigned i = 0; cmdHasOpt("dump", i); i++) {
@@ -1033,8 +1033,7 @@ enum PassRetcode CPUModule::run()
                 }
             }
         }
-
-
+        
         /*********** T O D O *********/
         if(generatedExternalInterrupt)
             printf("\nGenerated interrupt");
@@ -1049,6 +1048,13 @@ enum PassRetcode CPUModule::run()
         generatedInterrupt = false;
         generatedExternalInterrupt = false;
     }
+
+    /* Pre-declare this pass as completed (early) */
+    setStatus(PASS_STATUS_COMPLETED);
+
+    /* Wait for the other modules (Memory + IO) to stop their threads */
+    getTarget()->waitForPassToFinish(this, "MemoryModule");
+    getTarget()->waitForPassToFinish(this, "IOMachineModule");
 
     if(memory->showExecution)
         DEBUG(DNORMALH, "\n");

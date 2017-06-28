@@ -11,8 +11,6 @@
 #include <vector>
 #include <conio.h>
 
-#define LOCK(mut) //lock_guard<mutex> lock(mut)
-
 static mutex glob_iomodule_vmconsole_mutex;
 
 #define IO_VMCONSOLE_MAX_STDOUT_FIFOBUFFER_SIZE 8192 /* Maximum amount of characters the stdout buffer can hold */
@@ -72,8 +70,20 @@ private:
 		return DEV_RET_OK;
 	}
 
+	enum DevRetcode  stdinPush(int ch)
+	{
+		/* Just ignore this request if the device / operation is disabled */
+		if (!isDeviceEnabled || !isStdinEnabled) return DEV_RET_OK;
+		/* Buffer has contents. Set read flag to ready */
+		isRdBufferReady = true;
+		stdinFIFOBuffer.push_back((char)ch);
+
+		return DEV_RET_OK;
+	}
+
 	enum DevRetcode stdoutRead(uint64_t & outData)
 	{
+		LOCK(glob_iomodule_vmconsole_mutex);
 		/* Just ignore this request if the device / operation is disabled */
 		if(!isDeviceEnabled || !isStdinEnabled)
 			return DEV_RET_OK;
@@ -89,15 +99,6 @@ private:
 	}
 
 public:
-	void stdinPush(int ch)
-	{
-		/* Just ignore this request if the device / operation is disabled */
-		if(!isDeviceEnabled || !isStdinEnabled) return;
-		/* Buffer has contents. Set read flag to ready */
-		isRdBufferReady = true;
-		stdinFIFOBuffer.push_back((char)ch);
-	}
-
 	DEV_CONSTR(VMConsole)
 	{
 		/* Nothing to construct */
@@ -120,11 +121,12 @@ public:
 	enum DevRetcode run(runDevLaunchCommandPacket_t * runCmd)
 	{
 		while (IS_IO_LIVE()) {
+			LOCK(glob_iomodule_vmconsole_mutex);
+
 			/* We'll need to flush the write FIFO buffer into stdout here.
 			   Meanwhile, if there is no text to output, stay idle (until the IO Module closes) */
 
 			if(!stdoutFIFOBuffer.empty()) {
-				LOCK(glob_iomodule_vmconsole_mutex);
 				/* We've got some text to output */
 				putc(stdoutFIFOBuffer.front(), stdout);
 				/* Pop the front of the buffer */

@@ -10,8 +10,6 @@
 #include "../../../CPU/FISCCPUModule.h"
 #include <fvm/Debug/Debug.h>
 
-#define LOCK(mut) lock_guard<mutex> lock(mut)
-
 static mutex glob_iomodule_timer_mutex;
 
 /* Define the size of the address space for this device (in bytes) */

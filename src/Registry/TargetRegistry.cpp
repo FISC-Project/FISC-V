@@ -60,3 +60,37 @@ enum PassStatus TargetRegistry::getPassStatus(Pass * passID, unsigned int passIn
 		return PASS_STATUS_NOAUTH;
 	return pass->getStatus();
 }
+
+enum PassStatus TargetRegistry::waitForPassToFinish(Pass * passID, std::string passName)
+{
+	Pass * pass = getPass(passID, passName);
+	if (pass == nullptr) /* It's possible the pass doesn't exist. We assume NOAUTH regardless */
+		return PASS_STATUS_NOAUTH;
+
+	enum PassStatus retcode = PASS_STATUS_NULL;
+	while (1) {
+		switch ((retcode = pass->getStatus())) {
+		case PASS_STATUS_NULL: case PASS_STATUS_NOTSTARTED: case PASS_STATUS_NOAUTH: case PASS_STATUS_COMPLETED: case PASS_STATUS_COMPLETEDWITHWARNINGS:
+		case PASS_STATUS_COMPLETEDWITHERRORS: case PASS_STATUS_COMPLETEDWITHFATALERRORS: /* Finished execution */ return retcode;
+		default: /* The pass is still running */ break;
+		}
+	}
+	return retcode;
+}
+
+enum PassStatus TargetRegistry::waitForPassToFinish(Pass * passID, unsigned int passIndex)
+{
+	Pass * pass = getPass(passID, passIndex);
+	if (pass == nullptr) /* It's possible the pass doesn't exist. We assume NOAUTH regardless */
+		return PASS_STATUS_NOAUTH;
+
+	enum PassStatus retcode = PASS_STATUS_NULL;
+	while (1) {
+		switch ((retcode = pass->getStatus())) {
+		case PASS_STATUS_NULL: case PASS_STATUS_NOTSTARTED: case PASS_STATUS_NOAUTH: case PASS_STATUS_COMPLETED: case PASS_STATUS_COMPLETEDWITHWARNINGS:
+		case PASS_STATUS_COMPLETEDWITHERRORS: case PASS_STATUS_COMPLETEDWITHFATALERRORS: /* Finished execution */ return retcode;
+		default: /* The pass is still running */ break;
+		}
+	}
+	return retcode;
+}

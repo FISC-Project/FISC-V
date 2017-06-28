@@ -49,6 +49,9 @@ public:
 	enum PassStatus getPassStatus(Pass * passID, std::string passName);
 	enum PassStatus getPassStatus(Pass * passID, unsigned int passIndex);
 
+	enum PassStatus waitForPassToFinish(Pass * passID, std::string passName);
+	enum PassStatus waitForPassToFinish(Pass * passID, unsigned int passIndex);
+
 private:
 	Runtime runContext;
 	std::vector<Pass*> passList;
