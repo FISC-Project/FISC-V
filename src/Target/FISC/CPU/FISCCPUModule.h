@@ -5,6 +5,7 @@
 
 namespace FISC {
 
+class IOMachineConfigurator;
 class MemoryModule;
 class CPUConfigurator;
 class Instruction;
@@ -15,8 +16,9 @@ private:
     #define CPU_MODULE_PRIORITY 3 /* The execution priority of this module */
 
 private:
-    MemoryModule    * memory; /* The main memory handle                                          */
-    CPUConfigurator * cconf;  /* The configuration of the CPU. Contains the list of instructions */
+    IOMachineConfigurator * ioconf; /* The handle for the configuration of the IO Controller          */
+    MemoryModule    * memory;       /* The main memory handle                                         */
+    CPUConfigurator * cconf;        /* The configuration of the CPU. Contains the list of instructions */
     bool isBranching;
     bool isInsideException;
     bool isInsideInterrupt;

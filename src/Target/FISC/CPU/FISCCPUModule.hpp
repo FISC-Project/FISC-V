@@ -25,6 +25,7 @@
 #include <fvm/Pass.h>
 #include "FISCCPUConfigurator.hpp"
 #include "../Memory/FISCMemoryModule.hpp"
+#include "../IO/FISCIOMachineConfigurator.hpp"
 #include "FISCCPUModule.h"
 #include <algorithm>
 
@@ -912,6 +913,14 @@ enum PassRetcode CPUModule::init()
         DEBUG(DERROR, "Could not fetch the Memory Module Pass!");
         return PASS_RET_ERR;
     }
+
+    /* Fetch IO Machine Configurator Pass */
+    if (!(ioconf = GET_PASS(IOMachineConfigurator))) {
+        /* We were unable to find a IOMachineConfigurator pass!
+        We cannot continue the execution of this pass */
+        DEBUG(DERROR, "Could not fetch the IO Machine Configurator Pass!");
+        return PASS_RET_ERR;
+    }
         
     /* Set up the context for all of the instructions 
         (this should be done in CPUConfigurator, but we
@@ -1048,6 +1057,11 @@ enum PassRetcode CPUModule::run()
         generatedInterrupt = false;
         generatedExternalInterrupt = false;
     }
+
+    /* Wait for stdout / in to be flushed */
+    VMConsole * vmConsole = dynamic_cast<VMConsole*>(ioconf->getDevice("VMConsole"));
+    if (vmConsole != nullptr)
+        while(!vmConsole->isStdoutFlushed());
 
     /* Pre-declare this pass as completed (early) */
     setStatus(PASS_STATUS_COMPLETED);

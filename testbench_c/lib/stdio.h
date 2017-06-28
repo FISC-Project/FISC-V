@@ -6,8 +6,6 @@
 #include "stdint.h"
 #include "attr.h"
 
-static bool stdout_async __data = false;
-
 /**********************/
 /******* OUTPUT *******/
 /**********************/
@@ -20,9 +18,6 @@ void putc(char ch)
 {
 	/* Send byte to virtual console */
 	io->VMConsole.wr = ch;
-	/* Wait for the text to be flushed (if async enabled) */
-	if(!stdout_async)
-		wait_stdout_flush();
 }
 
 void puts(char * str)

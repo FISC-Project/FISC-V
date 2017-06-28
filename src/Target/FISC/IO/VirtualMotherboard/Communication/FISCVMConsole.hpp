@@ -70,7 +70,7 @@ private:
 		return DEV_RET_OK;
 	}
 
-	enum DevRetcode  stdinPush(int ch)
+	enum DevRetcode stdinPush(int ch)
 	{
 		/* Just ignore this request if the device / operation is disabled */
 		if (!isDeviceEnabled || !isStdinEnabled) return DEV_RET_OK;
@@ -78,19 +78,22 @@ private:
 		isRdBufferReady = true;
 		stdinFIFOBuffer.push_back((char)ch);
 
+		/* Also push a new line after a carriage return */
+		if(ch == 13)
+			stdinFIFOBuffer.push_back('\n');
+
 		return DEV_RET_OK;
 	}
 
 	enum DevRetcode stdoutRead(uint64_t & outData)
 	{
-		LOCK(glob_iomodule_vmconsole_mutex);
 		/* Just ignore this request if the device / operation is disabled */
 		if(!isDeviceEnabled || !isStdinEnabled)
 			return DEV_RET_OK;
 
 		if(!stdinFIFOBuffer.empty()) {
 			outData = (char)stdinFIFOBuffer.front();
-			stdinFIFOBuffer.erase(stdoutFIFOBuffer.begin());
+			stdinFIFOBuffer.erase(stdinFIFOBuffer.begin());
 		}
 		
 		isRdBufferReady = !stdinFIFOBuffer.empty();
@@ -99,6 +102,18 @@ private:
 	}
 
 public:
+	bool isStdoutFlushed()
+	{
+		LOCK(glob_iomodule_vmconsole_mutex);
+		return stdoutFIFOBuffer.empty();
+	}
+	
+	bool isStdinFlushed()
+	{
+		LOCK(glob_iomodule_vmconsole_mutex);
+		return stdinFIFOBuffer.empty();
+	}
+
 	DEV_CONSTR(VMConsole)
 	{
 		/* Nothing to construct */
@@ -108,7 +123,7 @@ public:
 	{
 		isStdoutEnabled = false;
 		isStdinEnabled  = false;
-		isWrBufferReady = false;
+		isWrBufferReady = true;
 		isRdBufferReady = false;
 		return DEV_RET_OK;
 	}
@@ -121,8 +136,6 @@ public:
 	enum DevRetcode run(runDevLaunchCommandPacket_t * runCmd)
 	{
 		while (IS_IO_LIVE()) {
-			LOCK(glob_iomodule_vmconsole_mutex);
-
 			/* We'll need to flush the write FIFO buffer into stdout here.
 			   Meanwhile, if there is no text to output, stay idle (until the IO Module closes) */
 
@@ -187,8 +200,6 @@ public:
 
 	enum DevRetcode write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool debug)
 	{
-		LOCK(glob_iomodule_vmconsole_mutex);
-
 		enum DevRetcode success = DEV_RET_OK;
 
 		/* This device expects to receive the following requests */

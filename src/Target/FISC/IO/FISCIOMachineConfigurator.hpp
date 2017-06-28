@@ -26,7 +26,7 @@ public:
 	#define IOMACH_CONFIGURATOR_PRIORITY 1 /* The execution priority of this module */
 
 	/* List of permissions for external Passes that want to use the resources of this Pass */
-	#define WHITELIST_IOMACH_CONFIG {DECL_WHITELIST_ALL(IOMachineModule) DECL_WHITELIST_ALL(MemoryModule)}
+	#define WHITELIST_IOMACH_CONFIG {DECL_WHITELIST_ALL(IOMachineModule) DECL_WHITELIST_ALL(MemoryModule) DECL_WHITELIST_ALL(CPUModule)}
 
 	/* IO Controller properties */
 	#define IOMEMLOC (0x5000) /* The starting offset of the IO Address Space (byte aligned) */
@@ -48,6 +48,15 @@ public:
 				return dev;
 			addrAccum += dev->addressSpaceSize;
 		}
+		return nullptr;
+	}
+
+	Device * getDevice(std::string deviceName)
+	{
+		for(auto & dev : device_list)
+			if(strTolower(dev->deviceName) == strTolower(deviceName))
+				return dev; /* Found */
+		/* Not found */
 		return nullptr;
 	}
 

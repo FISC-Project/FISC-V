@@ -7,8 +7,6 @@ void initialize_stdout()
 	io->VMConsole.enDev = 1;
 	/* Enable stdout writing second */
 	io->VMConsole.enWr = 1;
-	/* The text must be sent synchronously */
-	stdout_async = false;
 }
 
 void initialize_stdin()
@@ -35,7 +33,7 @@ void initialize_fisc_machine()
 	initialize_stdin();  /* Input */
 
 	/* Finally, enable the timer for triggering CPU interrupts */
-	enable_timer();
+	//enable_timer();
 }
 
 #endif

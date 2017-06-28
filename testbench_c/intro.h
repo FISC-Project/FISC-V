@@ -11,7 +11,6 @@ void welcome()
 	puts("\n      F I S C    V I R T U A L      M A C H I N E\n");
 	showHeaderFooterLine();
 	puts("\n");
-
 }
 
 void goodbye()
@@ -20,4 +19,5 @@ void goodbye()
 	showHeaderFooterLine();
 	puts("\n\n> Closing the FISC CPU ...\n> Goodbye");
 	showHeaderFooterLine();
+	puts("\n");
 }
