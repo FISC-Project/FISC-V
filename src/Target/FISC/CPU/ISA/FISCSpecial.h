@@ -222,9 +222,9 @@ NEW_INSTRUCTION(FISC, SPDP, RF, /* Operation: R[Rd] = PDP */
 	return _cpu_->writeRegister(_this_->ifmt_r->rd, _cpu_->readRegister(SPECIAL_PDP), false, 0, 0, 0);
 });
 
-NEW_INSTRUCTION(FISC, LPFLA, RF, /* Operation: R[LR] = PDP */
+NEW_INSTRUCTION(FISC, LPFLA, RF, /* Operation: R[Rd] = PDP */
 {
-	return _cpu_->writeRegister(LR, _cpu_->readRegister(SPECIAL_PFLA), false, 0, 0, 0);
+	return _cpu_->writeRegister(_this_->ifmt_r->rd, _cpu_->readRegister(SPECIAL_PFLA), false, 0, 0, 0);
 });
 
 #endif
