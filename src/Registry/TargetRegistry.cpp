@@ -1,6 +1,8 @@
 #include <fvm/TargetRegistry.h>
 #include <fvm/Pass.h>
 
+static mutex glob_targetregistry_mutex;
+
 TargetRegistry::TargetRegistry(std::string targetName,
 	                           std::string targetNameLong, 
 			                   std::string targetOwnerDescription, 
@@ -47,6 +49,7 @@ Pass * TargetRegistry::getPass(Pass * passID, unsigned int passIndex)
 
 enum PassStatus TargetRegistry::getPassStatus(Pass * passID, std::string passName)
 {
+	LOCK(glob_targetregistry_mutex);
 	Pass * pass = getPass(passID, passName);
 	if(pass == nullptr) /* It's possible the pass doesn't exist. We assume NOAUTH regardless */
 		return PASS_STATUS_NOAUTH;
@@ -55,6 +58,7 @@ enum PassStatus TargetRegistry::getPassStatus(Pass * passID, std::string passNam
 
 enum PassStatus TargetRegistry::getPassStatus(Pass * passID, unsigned int passIndex)
 {
+	LOCK(glob_targetregistry_mutex);
 	Pass * pass = getPass(passID, passIndex);
 	if (pass == nullptr) /* It's possible the pass doesn't exist. We assume NOAUTH regardless */
 		return PASS_STATUS_NOAUTH;

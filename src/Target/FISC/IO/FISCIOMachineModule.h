@@ -13,6 +13,8 @@ class IOMachineModule : public RunPass {
 public:
     /* Pass properties */
     #define IOMACH_MODULE_PRIORITY 1 /* The execution priority of this module */
+
+    #define IOMACH_MODULE_CPUPOLLRATE_NS 1000000 /* The rate at which the IO Machine Module checks if the CPU is still running, in nanoseconds */
 #pragma endregion
 
 #pragma region REGION 2: THE IO MACHINE STRUCTURE DEFINITION (IMPL. SPECIFIC)

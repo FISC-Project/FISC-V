@@ -8,8 +8,6 @@
 
 using namespace tthread;
 
-#define LOCK(mut) lock_guard<mutex> lock(mut)
-
 static mutex glob_debug_mutex;
 
 static bool debugging = false;

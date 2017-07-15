@@ -10,10 +10,9 @@
 #include "FISCIOMachineModule.h"
 #include "../CPU/FISCCPUModule.h"
 #include "FISCIOMachineConfigurator.hpp"
+#include <fvm/Debug/Debug.h>
 
 namespace FISC {
-
-#define LOCK(mut) lock_guard<mutex> lock(mut)
 
 static mutex glob_iomodule_mutex;
 
@@ -178,8 +177,12 @@ enum PassRetcode IOMachineModule::run()
 
     while (1)
     {
-        CPUModulePassStatus = getTarget()->getPassStatus(this, "CPUModule");
+#if IOMACH_MODULE_CPUPOLLRATE_NS > 0
+        this_thread::sleep_for(chrono::nanoseconds(IOMACH_MODULE_CPUPOLLRATE_NS));
+#endif
 
+        CPUModulePassStatus = getTarget()->getPassStatus(this, "CPUModule");
+     
         if (CPUModulePassStatus == PASS_STATUS_RUNNING             ||
             CPUModulePassStatus == PASS_STATUS_RUNNINGWITHWARNINGS ||
             CPUModulePassStatus == PASS_STATUS_RUNNINGWITHERRORS   ||

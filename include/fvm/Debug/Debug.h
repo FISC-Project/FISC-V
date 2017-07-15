@@ -72,6 +72,9 @@ extern bool DEBUG(std::string fmt, ...);
 
 #define PRINT(fmt, ...) DEBUG(DVM, DNORMAL, true, fmt, __VA_ARGS__)
 #define PRINTC(type, fmt, ...) DEBUG(DVM, type, true, fmt, __VA_ARGS__)
+
+#define LOCK(mut) lock_guard<mutex> lock(mut)
+
 }
 
 #endif

@@ -3,7 +3,7 @@
 #include <fvm/Pass.h>
 #include <algorithm>
 
-#define POLLRATE_NS 0 /* The rate at which the passes are polled and joined, in nanoseconds */
+#define POLLRATE_NS 1000000 /* The rate at which the passes are polled and joined, in nanoseconds */
 
 uint32_t Runtime::liveThreads = 0;
 bool Runtime::systemHealthy = true;

@@ -13,6 +13,8 @@
 
 static mutex glob_iomodule_vmconsole_mutex;
 
+#define IO_VMCONSOLE_POLLRATE_NS 10000 /* The rate at which the IO device VMConsole updates the run function, in nanoseconds */
+
 #define IO_VMCONSOLE_MAX_STDOUT_FIFOBUFFER_SIZE 8192 /* Maximum amount of characters the stdout buffer can hold */
 #define IO_VMCONSOLE_MAX_STDIN_FIFOBUFFER_SIZE  512  /* Maximum amount of characters the stdin buffer can hold  */
 
@@ -136,6 +138,10 @@ public:
 	enum DevRetcode run(runDevLaunchCommandPacket_t * runCmd)
 	{
 		while (IS_IO_LIVE()) {
+#if IO_VMCONSOLE_POLLRATE_NS > 0
+			this_thread::sleep_for(chrono::nanoseconds(IO_VMCONSOLE_POLLRATE_NS));
+#endif
+
 			/* We'll need to flush the write FIFO buffer into stdout here.
 			   Meanwhile, if there is no text to output, stay idle (until the IO Module closes) */
 

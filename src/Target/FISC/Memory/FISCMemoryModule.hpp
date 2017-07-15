@@ -34,6 +34,8 @@
 
 namespace FISC {
 
+static mutex glob_memorymodule_mutex;
+
 class MemoryModule : public RunPass {
 #pragma region REGION 1: THE MEMORY CONFIGURATION DATA
 private:
@@ -43,7 +45,9 @@ private:
     /* List of permissions for external Passes that want to use the resources of this Pass */
     #define WHITELIST_MEM_MOD {DECL_WHITELIST_ALL(CPUModule)}
 
-    #define MEMORY_MODULE_CPUPOLLRATE_NS 0 /* The rate at which the Memory Module checks if the CPU is still running, in nanoseconds */
+    #define MEMORY_MODULE_CPUPOLLRATE_NS 1000000 /* The rate at which the Memory Module checks if the CPU is still running, in nanoseconds */
+
+    #define MEMORY_MODULE_ENABLE_RUN (0) /* Does the memory run() function keep waiting for the CPU to finish (1), or does it exit immediately? (0) */
 public:
     bool showExecution;
 #pragma endregion
@@ -146,6 +150,8 @@ public:
 
     bool write(uint64_t data, uint32_t address, enum FISC_DATATYPE dataType, bool forceAlign, bool isMMUOn, bool isLittleEndian, bool debug)
     {
+        LOCK(glob_memorymodule_mutex);
+
         /* Align (or not) the address */
         if (forceAlign)
             alignAddress(address, dataType);
@@ -162,7 +168,7 @@ public:
         /* Check if this address falls inside IO Space */
         Device * dev;
         if ((dev = ioconf->isAddressIO(address)) != nullptr) {
-            /* Redirect the read request into the IO Controller */
+            /* Redirect the write request into the IO Controller */
             if (debug && showExecution)
                 DEBUG(DNORMALH, ": @IODEV)");
             
@@ -348,6 +354,10 @@ public:
 
     enum PassRetcode run()
     {
+#if MEMORY_MODULE_ENABLE_RUN == 0
+        return PASS_RET_OK;
+#endif
+
         enum PassStatus CPUModulePassStatus = PASS_STATUS_NULL;
 
         /* For now we don't want to keep anything running on this thread.
@@ -355,6 +365,10 @@ public:
 
         while (1)
         {
+#if MEMORY_MODULE_CPUPOLLRATE_NS > 0
+            this_thread::sleep_for(chrono::nanoseconds(MEMORY_MODULE_CPUPOLLRATE_NS));
+#endif
+
             CPUModulePassStatus = getTarget()->getPassStatus(this, "CPUModule");
 
             if (CPUModulePassStatus == PASS_STATUS_RUNNING             ||
@@ -364,10 +378,6 @@ public:
                 CPUModulePassStatus == PASS_STATUS_NOTSTARTED)
             {
                 /* The CPU is running / initializing. Stay idle doing nothing */
-
-#if MEMORY_MODULE_CPUPOLLRATE_NS > 0
-                this_thread::sleep_for(chrono::nanoseconds(MEMORY_MODULE_CPUPOLLRATE_NS));
-#endif
             }
             else
             {
