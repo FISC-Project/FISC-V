@@ -1,0 +1,3 @@
+add_library(FVMFISCIOMach-Video-VGA FISCVGAModule.hpp ../MoboDevice.h ../../FISCIOMachineModule.h)
+
+set_target_properties(FVMFISCIOMach-Video-VGA PROPERTIES LINKER_LANGUAGE CXX)

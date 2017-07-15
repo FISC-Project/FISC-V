@@ -16,13 +16,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -D_CRT_SECURE_NO_WARNINGS")
 
 add_executable(fvm src/FVM.cpp)
 
-include_directories(include src lib)
+include_directories(include src lib lib/SDL/i686-w64-mingw32/include)
 
 add_subdirectory(src)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT fvm)
 
-target_link_libraries(fvm
+set(SDL2_LIBRARY "${PROJECT_SOURCE_DIR}/lib/SDL/i686-w64-mingw32/lib/libSDL2.dll.a;${PROJECT_SOURCE_DIR}/lib/SDL/i686-w64-mingw32/lib/libSDL2main.a")
+
+target_link_libraries(fvm PUBLIC "-SAFESEH:NO"
     ########## VM Infrastructure ##########
     FVMDebug 
     FVMAPILinux 
@@ -34,6 +36,7 @@ target_link_libraries(fvm
 
     ########## Support Libraries ##########
     FVMUtils
+    ${SDL2_LIBRARY}
 )
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

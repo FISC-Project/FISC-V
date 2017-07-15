@@ -1,9 +1,14 @@
 add_subdirectory(Communication)
 add_subdirectory(Time)
+add_subdirectory(Video)
+add_subdirectory(Input)
 
 set_target_properties(
     FVMFISCIOMach-Comms-VMConsole
-    FVMFISCIOMach-Timer
+    FVMFISCIOMach-Time-Timer
+    FVMFISCIOMach-Video-VGA
+    FVMFISCIOMach-Input-Keyboard
+    FVMFISCIOMach-Input-Mouse
 
     PROPERTIES FOLDER "Machine Target - FISC - VirtualMotherboard"
 )

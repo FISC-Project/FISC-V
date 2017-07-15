@@ -1,0 +1,5 @@
+add_library(FVMFISCIOMach-Input-Keyboard FISCKeyboardModule.hpp ../MoboDevice.h ../../FISCIOMachineModule.h)
+add_library(FVMFISCIOMach-Input-Mouse FISCMouseModule.hpp ../MoboDevice.h ../../FISCIOMachineModule.h)
+
+set_target_properties(FVMFISCIOMach-Input-Keyboard PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(FVMFISCIOMach-Input-Mouse PROPERTIES LINKER_LANGUAGE CXX)

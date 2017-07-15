@@ -40,8 +40,8 @@ private:
 
 	#define TIMER_INTCODE                      0        /* The interrupt code of the timer seen by the CPU. This represents the interrupt offset on the interrupt vector for the timer */
 	#define DEFAULT_TIMER_SLEEPTIME_NS         100000   /* Default sleep time for the timer (in nanosecond scale)                                                                      */
-	#define DEFAULT_TIMER_QUANTA_SLEEPTIME_NS  1        /* The smallest time atomic scale each sleep trigger sleeps for                                                                */
-	#define DEFAULT_TIMER_MINIMUM_SLEEPTIME_NS 1000     /* The minimum value the variable timerSleeptime can hold                                                                      */
+	#define DEFAULT_TIMER_QUANTA_SLEEPTIME_NS  10000    /* The smallest time atomic scale each sleep trigger sleeps for                                                                */
+	#define DEFAULT_TIMER_MINIMUM_SLEEPTIME_NS 100000   /* The minimum value the variable timerSleeptime can hold                                                                      */
 	#define DEFAULT_TIMER_MAXIMUM_SLEEPTIME_NS 10000000 /* The maximum value the variable timerSleeptime can hold                                                                      */
 	uint64_t timerSleeptime; /* The period of the timer's interrupt                                                                                                                 */
 	uint64_t sleepCounter;   /* The counter which counts up and triggers the CPU interrupt whenever it reaches the value of timerSleeptime, resetting back to 0 after the match     */
@@ -118,7 +118,7 @@ public:
 
 		/* This device expects to receive the following requests */
 		switch ((enum TIMERMODULE_ADDRESS_IOCTL)address) {
-		/* Ignore this request for writing */
+		/* Ignore this request for reading */
 		case TIMERMODULE_ENDEV:
 		case TIMERMODULE_ENTIMER:
 		case TIMERMODULE_SETPERIOD0: case TIMERMODULE_SETPERIOD1: case TIMERMODULE_SETPERIOD2: case TIMERMODULE_SETPERIOD3:
