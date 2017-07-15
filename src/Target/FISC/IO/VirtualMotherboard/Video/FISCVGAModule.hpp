@@ -40,7 +40,7 @@ enum VGAMODULE_ADDRESS_IOCTL {
 };
 
 #define WINDOW_TITLE  "Virtual Machine - FISC"
-#define WINDOW_ICON   "src/Target/FISC/resources/fisc_logo.bmp"
+#define WINDOW_ICON   "res/fisc_logo.bmp"
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
 
@@ -54,10 +54,9 @@ private:
 	
 	void enable_device()
 	{
-		SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE, &window, &renderer);
+		SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL, &window, &renderer);
 		SDL_SetWindowTitle(window, WINDOW_TITLE);
-		SDL_Surface * icon = SDL_LoadBMP(WINDOW_ICON);
-		SDL_SetWindowIcon(window, icon);
+		SDL_SetWindowIcon(window, SDL_LoadBMP(WINDOW_ICON));
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 		SDL_RenderClear(renderer);
