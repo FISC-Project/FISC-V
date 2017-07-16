@@ -26,7 +26,7 @@ static mutex glob_iomodule_vga_mutex;
 Address   |  Operation / Meaning
 ---------------------------------
 0         | Enable Device               (1) (0-disable. 1-enable)
-1         | Get Status                  (1) (returns 2 bits: isVGAEnabled | DeviceEnabled
+1         | Get Status                  (1) (returns 3 bits: isVGAInit | isVGAEnabled | DeviceEnabled
 2..3      | Pixel channel: x pos        (4) (sets the x pos variable for accessing the internal pixel information)
 4..5      | Pixel channel: y pos        (4) (sets the y pos variable for accessing the internal pixel information)
 6         | Pixel channel: access_width (1) (sets the pixel access width to read/write 8/16/32/64 bits on one go from the internal pixel information)
@@ -88,50 +88,6 @@ private:
 
 private:
 
-	bool vga_write_to_buffer(char * bufferptr, uint32_t loc, uint64_t data, uint8_t access_width, SDL_PixelFormat * fmt)
-	{
-		switch (access_width) {
-		case 0: {
-			uint32_t * ptr = (uint32_t*)&bufferptr[loc];
-			if(fmt != nullptr)
-				*ptr = SDL_MapRGB(fmt, 0, 0, (uint8_t)data & 0xFF);
-			else
-				*ptr = (uint8_t)data;
-			break;
-		}
-		case 1: {
-			uint32_t * ptr = (uint32_t*)&bufferptr[loc];
-			if(fmt != nullptr)
-				*ptr = SDL_MapRGB(fmt, 0, (uint8_t)((data & 0xFF00) >> 8), (uint8_t)data & 0xFF);
-			else
-				*ptr = (uint16_t)data;
-			break;
-		}
-		case 2: {
-			uint32_t * ptr = (uint32_t*)&bufferptr[loc];
-			if (fmt != nullptr)
-				*ptr = SDL_MapRGB(fmt, (uint8_t)((data & 0xFF0000) >> 16), (uint8_t)((data & 0xFF00) >> 8), (uint8_t)data & 0xFF);
-			else
-				*ptr = (uint32_t)data;
-			break;
-		}
-		case 3: {
-			uint32_t * ptr = (uint32_t*)&bufferptr[loc];
-
-			if(fmt != nullptr) {
-				ptr[0] = SDL_MapRGB(fmt, (uint8_t)((data & 0xFF000000000000) >> 48), (uint8_t)((data & 0xFF0000000000) >> 40), (uint8_t)((data & 0xFF00000000) >> 32));
-				ptr[1] = SDL_MapRGB(fmt, (uint8_t)((data & 0xFF0000) >> 16), (uint8_t)((data & 0xFF00) >> 8), (uint8_t)data & 0xFF);
-			}
-			else {
-				ptr[0] = (uint32_t)(uint8_t)data;
-				ptr[1] = (data & 0xFFFFFFFF00000000) >> 32;
-			}
-			break;
-		}
-		}
-		return true;
-	}
-
 	bool vga_flip_buffer()
 	{
 		other_renderbuffer = current_renderbuffer;
@@ -144,30 +100,30 @@ private:
 	
 	uint64_t vga_read_pixeldata(uint16_t x, uint16_t y, uint8_t access_width)
 	{
-		uint32_t renderbuffer_loc = y * WINDOW_WIDTH * 4 + x * 4;
+		uint32_t loc = y * WINDOW_WIDTH * 4 + x * 4;
 
-		if (renderbuffer_loc >= LINEAR_FRAMEBUFFER_SIZE) return (uint64_t)-1;
+		if (loc >= LINEAR_FRAMEBUFFER_SIZE) return (uint64_t)-1;
 
 		switch (access_width) {
 		case 0:
-			return (uint64_t)renderbuffer[renderbuffer_loc];
+			return (uint64_t)other_renderbuffer[loc];
 		case 1:
-			return (uint64_t)(((uint8_t)renderbuffer[renderbuffer_loc] << 8) |
-				   (uint8_t)renderbuffer[renderbuffer_loc + 1]);
+			return (uint64_t)(((uint8_t)other_renderbuffer[loc] << 8) |
+				   (uint8_t)other_renderbuffer[loc + 1]);
 		case 2:
-			return (uint64_t)(((uint8_t)(renderbuffer[renderbuffer_loc]) << 24) |
-				   ((uint8_t)(renderbuffer[renderbuffer_loc + 1]) << 16)        |
-				   ((uint8_t)(renderbuffer[renderbuffer_loc + 2]) << 8)         |
-				   (uint8_t)(renderbuffer[renderbuffer_loc + 3]));
+			return (uint64_t)(((uint8_t)(other_renderbuffer[loc]) << 24) |
+				   ((uint8_t)(other_renderbuffer[loc + 1]) << 16)        |
+				   ((uint8_t)(other_renderbuffer[loc + 2]) << 8)         |
+				   (uint8_t)(other_renderbuffer[loc  + 3]));
 		case 3:
-			return (uint64_t)(((uint64_t)(renderbuffer[renderbuffer_loc]) << 56) |
-				   ((uint64_t)renderbuffer[renderbuffer_loc + 1] << 48)          |
-				   ((uint64_t)renderbuffer[renderbuffer_loc + 2] << 40)          |
-				   ((uint64_t)renderbuffer[renderbuffer_loc + 3] << 32)          |
-				   ((uint64_t)renderbuffer[renderbuffer_loc + 4] << 24)          |
-				   ((uint64_t)renderbuffer[renderbuffer_loc + 5] << 16)          |
-				   ((uint64_t)renderbuffer[renderbuffer_loc + 6] << 8)           |
-				   (uint64_t)renderbuffer[renderbuffer_loc + 7]);
+			return (uint64_t)(((uint64_t)(other_renderbuffer[loc]) << 56) |
+				   ((uint64_t)other_renderbuffer[loc + 1] << 48)          |
+				   ((uint64_t)other_renderbuffer[loc + 2] << 40)          |
+				   ((uint64_t)other_renderbuffer[loc + 3] << 32)          |
+				   ((uint64_t)other_renderbuffer[loc + 4] << 24)          |
+				   ((uint64_t)other_renderbuffer[loc + 5] << 16)          |
+				   ((uint64_t)other_renderbuffer[loc + 6] << 8)           |
+				   (uint64_t)other_renderbuffer[loc  + 7]);
 		default: return (uint64_t)-1;
 		}
 		return 0;
@@ -187,11 +143,13 @@ private:
 	{
 		isVGAEnabled = true;
 
+		/* Initialise SDL: */
 		if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 			DEBUG(DERROR, "(SDL) Could not initialize SDL! SDL Error: %s\n", SDL_GetError());
 			return false;
 		}
 
+		/* Initialise and create window: */
 		window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 		if (window == NULL) {
 			DEBUG(DERROR, "(SDL) Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -200,18 +158,21 @@ private:
 		}
 		SDL_SetWindowIcon(window, SDL_LoadBMP(WINDOW_ICON));
 
+		/* Initialise both render buffers: */
 		memset(renderbuffer, 0, LINEAR_FRAMEBUFFER_SIZE);
 		memset(doublerenderbuffer, 0, LINEAR_FRAMEBUFFER_SIZE);
-				
-		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 		
+		/* Create and set renderer */
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 		SDL_RenderClear(renderer);
 		SDL_RenderPresent(renderer);
+
+		/* Create texture that will be constantly rendered */
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH, WINDOW_HEIGHT);
 		
+		/* All done */
 		isVGAInit = true;
-
 		return true;
 	}
 
@@ -250,7 +211,9 @@ private:
 			}
 			
 			vga_render();
-			SDL_Delay(1);
+#if IO_VGA_POLLRATE_NS > 0
+			this_thread::sleep_for(chrono::nanoseconds(IO_VGA_POLLRATE_NS));
+#endif
 		}
 	}
 
@@ -328,7 +291,7 @@ public:
 			/* Read requests */
 			/*****************/
 		case VGAMODULE_GETSTATUS:
-			outData = (uint64_t)((((int)isVGAEnabled) << 1) | ((int)isDeviceEnabled));
+			outData = (uint64_t)((((int)isVGAInit) << 2) | (((int)isVGAEnabled) << 1) | ((int)isDeviceEnabled));
 			break;
 		case VGAMODULE_PXRD:
 			outData = vga_read_pixeldata(pixel_channel.xpos, pixel_channel.ypos, pixel_channel.access_width);
@@ -379,6 +342,7 @@ public:
 		case VGAMODULE_PXRD:
 			break;
 		default: {
+				/* Handle the pixel writing operation */
 				if (address >= VGAMODULE_PXDATA) {
 					address = ((address - VGAMODULE_PXDATA) / 8) * 2;
 					
