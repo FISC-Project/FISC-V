@@ -12,18 +12,13 @@
 
 static mutex glob_iomodule_timer_mutex;
 
-/* Define the size of the address space for this device (in bytes) */
-#define IO_TIMERMODULE_BANDWIDTH (7)
-
-#define IO_TIMERMODULE_ENABLE_SLEEPING (0) /* Do we even allow the timer to sleep its thread (0-No. 1-Yes) */
-
 /* -- Device address allocation --
 Address   |  Operation / Meaning
 ---------------------------------
-0         | Enable Device    (0-disable. 1-enable)
-1         | Enable timer     (0-disable. 1-enable)
-2..5      | Set timer period (in ns / 32 bits)
-6         | Get Status       (returns 2 bits: TimerEnabled | DeviceEnabled)
+0         | Enable Device          (1) (0-disable. 1-enable)
+1         | Enable timer           (1) (0-disable. 1-enable)
+2..5      | Set timer period in ns (4)
+6         | Get Status             (1) (returns 2 bits: TimerEnabled | DeviceEnabled)
 */
 
 enum TIMERMODULE_ADDRESS_IOCTL {
@@ -31,7 +26,13 @@ enum TIMERMODULE_ADDRESS_IOCTL {
 	TIMERMODULE_ENTIMER,
 	TIMERMODULE_SETPERIOD0, TIMERMODULE_SETPERIOD1, TIMERMODULE_SETPERIOD2, TIMERMODULE_SETPERIOD3,
 	TIMERMODULE_GETSTATUS,
+	TIMERMODULE_ADDRESS_IOCTL__COUNT
 };
+
+/* Define the size of the address space for this device (in bytes) */
+#define IO_TIMERMODULE_BANDWIDTH (TIMERMODULE_ADDRESS_IOCTL__COUNT)
+
+#define IO_TIMERMODULE_ENABLE_SLEEPING (0) /* Do we even allow the timer to sleep its thread (0-No. 1-Yes) */
 
 class TimerModule : public Device {
 private:

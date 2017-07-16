@@ -13,25 +13,17 @@
 
 static mutex glob_iomodule_vmconsole_mutex;
 
-#define IO_VMCONSOLE_POLLRATE_NS 10000 /* The rate at which the IO device VMConsole updates the run function, in nanoseconds */
-
-#define IO_VMCONSOLE_MAX_STDOUT_FIFOBUFFER_SIZE 8192 /* Maximum amount of characters the stdout buffer can hold */
-#define IO_VMCONSOLE_MAX_STDIN_FIFOBUFFER_SIZE  512  /* Maximum amount of characters the stdin buffer can hold  */
-
-/* Define the size of the address space for this device (in bytes) */
-#define IO_VMCONSOLE_BANDWIDTH (8)
-
 /* -- Device address allocation --
   Address   |  Operation / Meaning 
   ---------------------------------
-  0         | Enable Device (0-disable. 1-enable)
-  1         | Enable stdout (0-disable. 1-enable)
-  2         | Enable stdin  (0-disable. 1-enable)
-  3         | Get status    (returns 3 bits: StdinEnabled | StdoutEnabled | DeviceEnabled)
-  4         | Write byte to stdout
-  5         | Is write buffer (filled by CPU) ready to be outputted into stdout
-  6         | Read byte from stdin
-  7         | Is read buffer (filled by stdin) ready to be read by the CPU  
+  0         | Enable Device        (1) (0-disable. 1-enable)
+  1         | Enable stdout        (1) (0-disable. 1-enable)
+  2         | Enable stdin         (1) (0-disable. 1-enable)
+  3         | Get status           (1) (returns 3 bits: StdinEnabled | StdoutEnabled | DeviceEnabled)
+  4         | Write byte to stdout (1) 
+  5         | Is write buffer      (1) (filled by CPU) ready to be outputted into stdout
+  6         | Read byte from stdin (1) 
+  7         | Is read buffer       (1) (filled by stdin) ready to be read by the CPU  
 */
 
 enum VMCONSOLE_ADDRESS_IOCTL {
@@ -43,7 +35,16 @@ enum VMCONSOLE_ADDRESS_IOCTL {
 	VMCONSOLE_WRRDY,
 	VMCONSOLE_RD,
 	VMCONSOLE_RDRDY,
+	VMCONSOLE_ADDRESS_IOCTL__COUNT
 };
+
+#define IO_VMCONSOLE_POLLRATE_NS 10000 /* The rate at which the IO device VMConsole updates the run function, in nanoseconds */
+
+#define IO_VMCONSOLE_MAX_STDOUT_FIFOBUFFER_SIZE 8192 /* Maximum amount of characters the stdout buffer can hold */
+#define IO_VMCONSOLE_MAX_STDIN_FIFOBUFFER_SIZE  512  /* Maximum amount of characters the stdin buffer can hold  */
+
+/* Define the size of the address space for this device (in bytes) */
+#define IO_VMCONSOLE_BANDWIDTH (VMCONSOLE_ADDRESS_IOCTL__COUNT)
 
 class VMConsole : public Device {
 private:
