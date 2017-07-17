@@ -29,7 +29,7 @@ public:
 	#define WHITELIST_IOMACH_CONFIG {DECL_WHITELIST_ALL(IOMachineModule) DECL_WHITELIST_ALL(MemoryModule) DECL_WHITELIST_ALL(CPUModule)}
 
 	/* IO Controller properties */
-	#define IOMEMLOC (0x5000) /* The starting offset of the IO Address Space (byte aligned) */
+	#define IOMEMLOC (0x500000) /* The starting offset of the IO Address Space (byte aligned) */
 #pragma endregion
 
 #pragma region REGION 2: THE IO MACHINE STRUCTURE DEFINITION (IMPL. SPECIFIC)
